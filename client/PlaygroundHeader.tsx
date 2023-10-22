@@ -1,7 +1,5 @@
-/**
- * PlaygroundHeader.tsx
- * Copyright: Eric Traut 2023
- *
+/*
+ * Copyright (c) Eric Traut
  * Header bar with embedded controls for the playground.
  */
 

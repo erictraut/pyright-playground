@@ -1,7 +1,5 @@
-/**
- * MonacoEditor.tsx
- * Copyright: Eric Traut 2023
- *
+/*
+ * Copyright (c) Eric Traut
  * Wrapper interface around the monaco editor component. This class
  * handles language server interactions, the display of errors, etc.
  */

@@ -1,7 +1,5 @@
-/**
- * PlaygroundFooter.tsx
- * Copyright: Eric Traut 2023
- *
+/*
+ * Copyright (c) Eric Traut
  * Footer panel for playground web app.
  */
 

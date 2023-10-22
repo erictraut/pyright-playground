@@ -1,7 +1,5 @@
-/**
- * App.tsx
- * Copyright: Eric Traut 2023
- *
+/*
+ * Copyright (c) Eric Traut
  * Main UI for Pyright Playground web app.
  */
 
