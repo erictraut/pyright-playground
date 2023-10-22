@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "client",
+    "version": "1.0.0",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
