@@ -7,8 +7,8 @@
 
 import { StyleSheet, View } from 'react-native';
 import { MonacoEditor } from './MonacoEditor';
-import PlaygroundHeader from './PlaygroundHeader';
 import PlaygroundFooter from './PlaygroundFooter';
+import PlaygroundHeader from './PlaygroundHeader';
 
 export default function App() {
     return (
