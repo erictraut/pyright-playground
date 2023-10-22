@@ -4,11 +4,18 @@
  * sessions and manages their lifetimes.
  */
 
-import { exec, spawn } from 'node:child_process';
+import { exec, fork } from 'node:child_process';
 import * as fs from 'fs';
+import * as rpc from 'vscode-jsonrpc/node';
+import * as path from 'path';
 import packageJson from 'package-json';
 import { v4 as uuid } from 'uuid';
 import { Session, SessionId } from './session';
+import {
+    DidOpenTextDocumentParams,
+    InitializeParams,
+    InitializeRequest,
+} from 'vscode-languageserver';
 
 export interface InstallPyrightInfo {
     pyrightVersion: string;
@@ -17,6 +24,8 @@ export interface InstallPyrightInfo {
 
 // Map of sessions indexed by ID
 const activeSessions = new Map<string, Session>();
+
+const useIpcTransport = true;
 
 // Allocate a new session and return its ID.
 export async function createNewSession(pyrightVersion: string | undefined): Promise<SessionId> {
@@ -66,9 +75,23 @@ export async function getPyrightLatestVersion(): Promise<string> {
 export function startSession(localDirectory: string): Promise<SessionId> {
     return new Promise<SessionId>((resolve, reject) => {
         console.log(`Spawning new pyright language server from ${localDirectory}`);
-        const langServerProcess = spawn(
-            `${localDirectory}/node_modules/pyright/langserver.index.js`,
-            ['--node-ipc']
+        console.log(process.cwd());
+        const binaryPath = path.join(
+            process.cwd(),
+            localDirectory,
+            './node_modules/pyright/langserver.index.js'
+        );
+        console.log(binaryPath);
+        const langServerProcess = fork(
+            binaryPath,
+            [
+                useIpcTransport ? '--node-ipc' : '--stdio',
+                `--clientProcessId=${process.pid.toString()}`,
+            ],
+            {
+                cwd: process.cwd(),
+                silent: true,
+            }
         );
 
         // Create a new GUID for a session ID.
@@ -78,15 +101,25 @@ export function startSession(localDirectory: string): Promise<SessionId> {
         const session: Session = {
             id: sessionId,
             lastAccessTime: Date.now(),
+            documentText: '',
+            documentVersion: 1,
         };
 
-        // Add it to the map.
+        // Start tracking the session.
         activeSessions.set(sessionId, session);
 
         langServerProcess.on('spawn', () => {
             console.log(`Pyright language server started`);
             session.langServerProcess = langServerProcess;
-            resolve(sessionId);
+
+            setUpSessionConnection(session)
+                .then(() => {
+                    resolve(sessionId);
+                })
+                .catch((err) => {
+                    reject(`Failed to start pyright language server connection`);
+                    closeSession(sessionId);
+                });
         });
 
         langServerProcess.on('error', (err) => {
@@ -94,25 +127,90 @@ export function startSession(localDirectory: string): Promise<SessionId> {
             // the language server has been started.
             if (!session.langServerProcess) {
                 console.log(`Pyright language server failed to start: ${err.message}`);
-                reject(`Failed to start pyright language server`);
+                reject(`Failed to spawn pyright language server instance`);
             }
 
             closeSession(sessionId);
         });
 
-        langServerProcess.on('exit', () => {
+        langServerProcess.on('exit', (code) => {
+            console.log(`Pyright language server exited with code ${code}`);
             closeSession(sessionId);
         });
 
-        langServerProcess.on('close', () => {
+        langServerProcess.on('close', (code) => {
+            console.log(`Pyright language server closed with code ${code}`);
             closeSession(sessionId);
         });
     });
 }
+function handleDataLoggedByLanguageServer(data: any) {
+    console.log(
+        `Logged from pyright language server: ${
+            typeof data === 'string' ? data : data.toString('utf8')
+        }`
+    );
+}
 
-export async function installPyright(
-    requestedVersion: string | undefined
-): Promise<InstallPyrightInfo> {
+async function setUpSessionConnection(session: Session) {
+    if (!session.langServerProcess) {
+        return;
+    }
+
+    session.langServerProcess.stderr?.on('data', (data) => handleDataLoggedByLanguageServer(data));
+
+    if (useIpcTransport) {
+        session.langServerProcess.stdout?.on('data', (data) =>
+            handleDataLoggedByLanguageServer(data)
+        );
+    }
+
+    let connection: rpc.MessageConnection;
+    if (useIpcTransport) {
+        connection = rpc.createMessageConnection(
+            new rpc.IPCMessageReader(session.langServerProcess),
+            new rpc.IPCMessageWriter(session.langServerProcess)
+        );
+    } else {
+        connection = rpc.createMessageConnection(
+            new rpc.StreamMessageReader(session.langServerProcess.stdout!),
+            new rpc.StreamMessageWriter(session.langServerProcess.stdin!)
+        );
+    }
+
+    connection.listen();
+
+    session.connection = connection;
+
+    console.log('Sending initialization request to language server');
+    const init: InitializeParams = {
+        rootUri: 'file:///tmp',
+        processId: 1,
+        capabilities: {},
+        workspaceFolders: null,
+    };
+
+    connection.sendRequest(InitializeRequest.type, init);
+
+    // const notification = new rpc.NotificationType<DidOpenTextDocumentParams>(
+    //     'textDocument/didOpen'
+    // );
+
+    // connection.onNotification(notification, (message) => {
+    //     console.log(`Received message: ${JSON.stringify(message)}`);
+    // });
+
+    // await connection.sendNotification(notification, {
+    //     textDocument: {
+    //         uri: 'untitled:test.py',
+    //         languageId: 'python',
+    //         version: session.documentVersion,
+    //         text: 'print("Hello world")',
+    //     },
+    // });
+}
+
+async function installPyright(requestedVersion: string | undefined): Promise<InstallPyrightInfo> {
     console.log(`Pyright version ${requestedVersion || 'latest'} requested`);
 
     let version: string;

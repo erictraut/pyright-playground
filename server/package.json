@@ -6,7 +6,10 @@
         "dotenv": "^16.0.3",
         "express": "^4.18.2",
         "package-json": "^8.1.1",
-        "uuid": "^9.0.1"
+        "uuid": "^9.0.1",
+        "vscode-jsonrpc": "^8.2.0",
+        "vscode-languageclient": "^9.0.1",
+        "vscode-languageserver": "^9.0.1"
     },
     "devDependencies": {
         "@babel/core": "^7.20.0",
