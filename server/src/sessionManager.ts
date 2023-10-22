@@ -12,6 +12,7 @@ import packageJson from 'package-json';
 import { v4 as uuid } from 'uuid';
 import { Session, SessionId } from './session';
 import {
+    DidOpenTextDocumentNotification,
     DidOpenTextDocumentParams,
     InitializeParams,
     InitializeRequest,
@@ -94,7 +95,7 @@ export function startSession(localDirectory: string): Promise<SessionId> {
             }
         );
 
-        // Create a new GUID for a session ID.
+        // Create a new UUID for a session ID.
         const sessionId = uuid();
 
         // Create a new session object.
@@ -165,18 +166,14 @@ async function setUpSessionConnection(session: Session) {
         );
     }
 
-    let connection: rpc.MessageConnection;
-    if (useIpcTransport) {
-        connection = rpc.createMessageConnection(
-            new rpc.IPCMessageReader(session.langServerProcess),
-            new rpc.IPCMessageWriter(session.langServerProcess)
-        );
-    } else {
-        connection = rpc.createMessageConnection(
-            new rpc.StreamMessageReader(session.langServerProcess.stdout!),
-            new rpc.StreamMessageWriter(session.langServerProcess.stdin!)
-        );
-    }
+    const connection = rpc.createMessageConnection(
+        useIpcTransport
+            ? new rpc.IPCMessageReader(session.langServerProcess)
+            : new rpc.StreamMessageReader(session.langServerProcess.stdout!),
+        useIpcTransport
+            ? new rpc.IPCMessageWriter(session.langServerProcess)
+            : new rpc.StreamMessageWriter(session.langServerProcess.stdin!)
+    );
 
     connection.listen();
 
@@ -190,24 +187,20 @@ async function setUpSessionConnection(session: Session) {
         workspaceFolders: null,
     };
 
-    connection.sendRequest(InitializeRequest.type, init);
+    await connection.sendRequest(InitializeRequest.type, init);
 
-    // const notification = new rpc.NotificationType<DidOpenTextDocumentParams>(
-    //     'textDocument/didOpen'
-    // );
+    const notification = new rpc.NotificationType<DidOpenTextDocumentParams>(
+        'textDocument/didOpen'
+    );
 
-    // connection.onNotification(notification, (message) => {
-    //     console.log(`Received message: ${JSON.stringify(message)}`);
-    // });
-
-    // await connection.sendNotification(notification, {
-    //     textDocument: {
-    //         uri: 'untitled:test.py',
-    //         languageId: 'python',
-    //         version: session.documentVersion,
-    //         text: 'print("Hello world")',
-    //     },
-    // });
+    await connection.sendNotification(notification, {
+        textDocument: {
+            uri: 'untitled:test.py',
+            languageId: 'python',
+            version: session.documentVersion,
+            text: 'print("Hello world")',
+        },
+    });
 }
 
 async function installPyright(requestedVersion: string | undefined): Promise<InstallPyrightInfo> {
