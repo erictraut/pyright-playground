@@ -5,7 +5,7 @@
 
 import cors, { CorsOptions } from 'cors';
 import express from 'express';
-import { getDiagnostics } from './service';
+import { getDiagnostics, createSession, closeSession } from './service';
 
 const router = express.Router();
 export default router;
@@ -19,7 +19,15 @@ const corsOptions: CorsOptions = {
 
 router.use(cors(corsOptions));
 
-router.post('/diagnostics', (req, res) => {
+router.post('/session', (req, res) => {
+    createSession(req, res);
+});
+
+router.delete('/session/:sid', (req, res) => {
+    closeSession(req, res);
+});
+
+router.get('/session/:sid/diagnostics', (req, res) => {
     getDiagnostics(req, res);
 });
 

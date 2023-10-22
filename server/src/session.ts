@@ -5,18 +5,17 @@
  * performance reasons.
  */
 
+import { ChildProcess } from 'node:child_process';
+
 export type SessionId = string;
 
 export interface Session {
     // A unique ID for this session.
     id: SessionId;
 
-    // Is the session active or closed?
-    isActive: boolean;
-
-    // Version of pyright used for this session.
-    pyrightVersion: string;
-
+    // Child process running the language server for this session.
+    langServerProcess?: ChildProcess;
+    
     // Timestamp of last request to the session.
     lastAccessTime: number;
 }

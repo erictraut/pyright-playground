@@ -4,12 +4,35 @@
  */
 
 import { Request, Response } from 'express';
-import { installPyright } from './sessionManager';
+import * as SessionManager from './sessionManager';
+
+interface SessionOptions {
+    pythonVersion?: string;
+    pyrightVersion?: string;
+}
 
 interface CodeWithOptions {
     code: string;
-    pythonVersion?: string;
-    pyrightVersion?: string;
+}
+
+// Creates a new language server session and returns its ID.
+export function createSession(req: Request, res: Response) {
+    const parsedRequest = validateSessionOptions(req, res);
+    if (!parsedRequest) {
+        return;
+    }
+
+    SessionManager.createNewSession(parsedRequest.pyrightVersion)
+        .then((sessionId) => {
+            res.status(200).json({ sessionId });
+        })
+        .catch((err) => {
+            res.status(500).json({ message: err || 'An internal error occurred' });
+        });
+}
+
+export function closeSession(req: Request, res: Response) {
+    res.status(500).json({ message: 'Not implemented' });
 }
 
 // Given some Python code and associated options, returns
@@ -20,23 +43,24 @@ export function getDiagnostics(req: Request, res: Response) {
         return;
     }
 
-    installPyright(parsedRequest.pyrightVersion).then(() => {
-        res.status(200).json({
-            diagnostics: [
-                {
-                    message: 'This is a test',
-                    range: {
-                        start: { line: 0, character: 0 },
-                        end: { line: 0, character: 0 },
-                    },
-                    severity: 1,
-                    source: 'pyright',
-                },
-            ],
-        });
-    }).catch(err => {
-        res.status(500).json({ message: err || 'An internal error occurred' });
-    });
+    res.status(500).json({ message: 'Not implemented' });
+}
+
+function validateSessionOptions(req: Request, res: Response): SessionOptions | undefined {
+    if (!req.body || typeof req.body !== 'object') {
+        res.status(400).json({ message: 'Invalid request body' });
+        return undefined;
+    }
+
+    const pyrightVersion = req.body.pyrightVersion;
+    if (pyrightVersion !== undefined && typeof pyrightVersion !== 'string') {
+        res.status(400).json({ message: 'Invalid pyrightVersion' });
+        return undefined;
+    }
+
+    // TODO - validate other options
+
+    return { pyrightVersion };
 }
 
 function validateCodeWithOptions(req: Request, res: Response): CodeWithOptions | undefined {
@@ -51,14 +75,5 @@ function validateCodeWithOptions(req: Request, res: Response): CodeWithOptions |
         return undefined;
     }
 
-    const pyrightVersion = req.body.pyrightVersion;
-    if (pyrightVersion !== undefined && typeof pyrightVersion !== 'string') {
-        res.status(400).json({ message: 'Invalid pyrightVersion' });
-        return undefined;
-    }
-
-    // TODO - validate other options
-
-    return { code, pyrightVersion };
+    return { code };
 }
-
