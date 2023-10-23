@@ -6,7 +6,7 @@
  */
 
 import { ChildProcess } from 'node:child_process';
-import * as rpc from 'vscode-jsonrpc/node';
+import { LspClient } from './lspClient';
 
 export type SessionId = string;
 
@@ -17,15 +17,9 @@ export interface Session {
     // Child process running the language server for this session.
     langServerProcess?: ChildProcess;
 
-    // Bidirectional connection to the language server.
-    connection?: rpc.MessageConnection;
+    // Proxy language client that interacts with the server.
+    langClient?: LspClient;
 
     // Timestamp of last request to the session.
     lastAccessTime: number;
-
-    // Last document text received.
-    documentText: string;
-
-    // Last document version number received.
-    documentVersion: number;
 }

@@ -4,24 +4,13 @@
  * sessions and manages their lifetimes.
  */
 
-import { exec, fork } from 'node:child_process';
 import * as fs from 'fs';
-import * as rpc from 'vscode-jsonrpc/node';
-import * as path from 'path';
+import { exec, fork } from 'node:child_process';
 import packageJson from 'package-json';
+import * as path from 'path';
 import { v4 as uuid } from 'uuid';
+import { LspClient } from './lspClient';
 import { Session, SessionId } from './session';
-import {
-    ConfigurationParams,
-    DiagnosticTag,
-    DidChangeConfigurationNotification,
-    DidChangeConfigurationParams,
-    DidOpenTextDocumentParams,
-    InitializeParams,
-    InitializeRequest,
-    LogMessageParams,
-    PublishDiagnosticsParams,
-} from 'vscode-languageserver';
 
 export interface InstallPyrightInfo {
     pyrightVersion: string;
@@ -30,8 +19,6 @@ export interface InstallPyrightInfo {
 
 // Map of sessions indexed by ID
 const activeSessions = new Map<string, Session>();
-
-const useIpcTransport = true;
 
 // Allocate a new session and return its ID.
 export async function createNewSession(pyrightVersion: string | undefined): Promise<SessionId> {
@@ -80,20 +67,17 @@ export async function getPyrightLatestVersion(): Promise<string> {
 
 export function startSession(localDirectory: string): Promise<SessionId> {
     return new Promise<SessionId>((resolve, reject) => {
+        // Launch a new instance of the language server in another process.
         console.log(`Spawning new pyright language server from ${localDirectory}`);
-        console.log(process.cwd());
         const binaryPath = path.join(
             process.cwd(),
             localDirectory,
             './node_modules/pyright/langserver.index.js'
         );
-        console.log(binaryPath);
+
         const langServerProcess = fork(
             binaryPath,
-            [
-                useIpcTransport ? '--node-ipc' : '--stdio',
-                `--clientProcessId=${process.pid.toString()}`,
-            ],
+            ['--node-ipc', `--clientProcessId=${process.pid.toString()}`],
             {
                 cwd: process.cwd(),
                 silent: true,
@@ -107,8 +91,6 @@ export function startSession(localDirectory: string): Promise<SessionId> {
         const session: Session = {
             id: sessionId,
             lastAccessTime: Date.now(),
-            documentText: '',
-            documentVersion: 1,
         };
 
         // Start tracking the session.
@@ -117,8 +99,10 @@ export function startSession(localDirectory: string): Promise<SessionId> {
         langServerProcess.on('spawn', () => {
             console.log(`Pyright language server started`);
             session.langServerProcess = langServerProcess;
+            session.langClient = new LspClient(langServerProcess);
 
-            setUpSessionConnection(session)
+            session.langClient
+                .initialize()
                 .then(() => {
                     resolve(sessionId);
                 })
@@ -150,104 +134,12 @@ export function startSession(localDirectory: string): Promise<SessionId> {
         });
     });
 }
+
 function handleDataLoggedByLanguageServer(data: any) {
     console.log(
         `Logged from pyright language server: ${
             typeof data === 'string' ? data : data.toString('utf8')
         }`
-    );
-}
-
-async function setUpSessionConnection(session: Session) {
-    if (!session.langServerProcess) {
-        return;
-    }
-
-    session.langServerProcess.stderr?.on('data', (data) => handleDataLoggedByLanguageServer(data));
-
-    if (useIpcTransport) {
-        session.langServerProcess.stdout?.on('data', (data) =>
-            handleDataLoggedByLanguageServer(data)
-        );
-    }
-
-    const connection = rpc.createMessageConnection(
-        useIpcTransport
-            ? new rpc.IPCMessageReader(session.langServerProcess)
-            : new rpc.StreamMessageReader(session.langServerProcess.stdout!),
-        useIpcTransport
-            ? new rpc.IPCMessageWriter(session.langServerProcess)
-            : new rpc.StreamMessageWriter(session.langServerProcess.stdin!)
-    );
-
-    connection.listen();
-
-    session.connection = connection;
-
-    // Initialize the server.
-    console.log('Sending initialization request to language server');
-    const init: InitializeParams = {
-        rootUri: 'file:///tmp',
-        rootPath: '/tmp',
-        processId: 1,
-        capabilities: {
-            textDocument: {
-                publishDiagnostics: {
-                    tagSupport: {
-                        valueSet: [DiagnosticTag.Unnecessary, DiagnosticTag.Deprecated],
-                    },
-                    versionSupport: true,
-                },
-                hover: {
-                    contentFormat: ['markdown', 'plaintext'],
-                },
-            },
-        },
-    };
-    await connection.sendRequest(InitializeRequest.type, init);
-
-    // Update the settings.
-    await connection.sendNotification(
-        new rpc.NotificationType<DidChangeConfigurationParams>('workspace/didChangeConfiguration'),
-        {
-            settings: {},
-        }
-    );
-
-    await connection.sendNotification(
-        new rpc.NotificationType<DidOpenTextDocumentParams>('textDocument/didOpen'),
-        {
-            textDocument: {
-                uri: 'untitled:test.py',
-                languageId: 'python',
-                version: session.documentVersion,
-                text: 'print("Hello world")',
-            },
-        }
-    );
-
-    connection.onNotification(
-        new rpc.NotificationType<PublishDiagnosticsParams>('textDocument.publishDiagnostics'),
-        (diagnostics) => {
-            console.log(
-                `Received diagnostics from language server: ${JSON.stringify(diagnostics)}`
-            );
-        }
-    );
-
-    connection.onNotification(
-        new rpc.NotificationType<LogMessageParams>('window/logMessage'),
-        (info) => {
-            console.log(`Received log message: ${info.message}`);
-        }
-    );
-
-    connection.onRequest(
-        new rpc.RequestType<ConfigurationParams, any, any>('workspace/configuration'),
-        (params) => {
-            console.log(`Received configuration param request: ${JSON.stringify(params)}}`);
-            return [];
-        }
     );
 }
 
