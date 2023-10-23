@@ -8,7 +8,9 @@ import { StyleSheet, Text, View } from 'react-native';
 export default function PlaygroundHeader() {
     return (
         <View style={styles.container}>
-            <Text style={styles.titleText}>Pyright Playground</Text>
+            <Text style={styles.titleText} selectable={false}>
+                Pyright Playground
+            </Text>
         </View>
     );
 }

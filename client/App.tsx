@@ -3,13 +3,14 @@
  * Main UI for Pyright Playground web app.
  */
 
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet } from 'react-native';
 import { MonacoEditor } from './MonacoEditor';
 import PlaygroundFooter from './PlaygroundFooter';
 import PlaygroundHeader from './PlaygroundHeader';
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types';
 import { LspClient } from './LspClient';
+import { ProblemsPanel } from './ProblemsPanel';
 
 const lspClient = new LspClient();
 
@@ -20,6 +21,7 @@ export interface AppState {
 }
 
 export default function App() {
+    const editorRef = useRef(null);
     const [appState, setAppState] = useState<AppState>({
         code: '',
         diagnostics: [],
@@ -47,9 +49,10 @@ export default function App() {
     });
 
     return (
-        <View style={styles.container}>
+        <Pressable style={styles.container}>
             <PlaygroundHeader />
             <MonacoEditor
+                ref={editorRef}
                 lspClient={lspClient}
                 code={appState.code}
                 diagnostics={appState.diagnostics}
@@ -62,8 +65,16 @@ export default function App() {
                     });
                 }}
             />
+            <ProblemsPanel
+                diagnostics={appState.diagnostics}
+                onSelectRange={(range) => {
+                    if (editorRef.current) {
+                        editorRef.current.selectRange(range);
+                    }
+                }}
+            />
             <PlaygroundFooter />
-        </View>
+        </Pressable>
     );
 }
 

@@ -6,7 +6,7 @@
 
 import Editor, { loader } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { useEffect, useRef } from 'react';
+import { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver-types';
 import { LspClient } from './LspClient';
@@ -51,16 +51,46 @@ export interface MonacoEditorProps {
     onUpdateCode: (code: string) => void;
 }
 
-export function MonacoEditor(props: MonacoEditorProps) {
+export interface MonacoEditorRef {
+    focus: () => void;
+    selectRange: (range: Range) => void;
+}
+
+export const MonacoEditor = forwardRef(function MonacoEditor(
+    props: MonacoEditorProps,
+    ref: ForwardedRef<MonacoEditorRef>
+) {
     const editorRef = useRef(null);
     const monacoRef = useRef(null);
+
     function handleEditorDidMount(
         editor: monaco.editor.IStandaloneCodeEditor,
         monacoInstance: any
     ) {
         editorRef.current = editor;
         monacoRef.current = monacoInstance;
+
+        editor.focus();
     }
+
+    useImperativeHandle(ref, () => {
+        return {
+            focus: () => {
+                const editor: monaco.editor.IStandaloneCodeEditor = editorRef.current;
+                if (editor) {
+                    editor.focus();
+                }
+            },
+            selectRange: (range: Range) => {
+                const editor: monaco.editor.IStandaloneCodeEditor = editorRef.current;
+                if (editor) {
+                    const monacoRange = convertRange(range);
+                    editor.setSelection(monacoRange);
+                    editor.revealLineInCenterIfOutsideViewport(monacoRange.startLineNumber);
+                }
+            },
+        };
+    });
 
     useEffect(() => {
         if (monacoRef?.current && editorRef?.current) {
@@ -89,7 +119,7 @@ export function MonacoEditor(props: MonacoEditorProps) {
             </View>
         </View>
     );
-}
+});
 
 function setFileMarkers(
     monacoInstance: any,
@@ -186,7 +216,7 @@ function getLspClientForModel(model: monaco.editor.ITextModel): LspClient | unde
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 4,
+        paddingVertical: 4,
     },
     editor: {
         position: 'absolute',
