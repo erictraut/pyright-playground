@@ -12,10 +12,15 @@ import packageJson from 'package-json';
 import { v4 as uuid } from 'uuid';
 import { Session, SessionId } from './session';
 import {
-    DidOpenTextDocumentNotification,
+    ConfigurationParams,
+    DiagnosticTag,
+    DidChangeConfigurationNotification,
+    DidChangeConfigurationParams,
     DidOpenTextDocumentParams,
     InitializeParams,
     InitializeRequest,
+    LogMessageParams,
+    PublishDiagnosticsParams,
 } from 'vscode-languageserver';
 
 export interface InstallPyrightInfo {
@@ -179,28 +184,71 @@ async function setUpSessionConnection(session: Session) {
 
     session.connection = connection;
 
+    // Initialize the server.
     console.log('Sending initialization request to language server');
     const init: InitializeParams = {
         rootUri: 'file:///tmp',
+        rootPath: '/tmp',
         processId: 1,
-        capabilities: {},
-        workspaceFolders: null,
+        capabilities: {
+            textDocument: {
+                publishDiagnostics: {
+                    tagSupport: {
+                        valueSet: [DiagnosticTag.Unnecessary, DiagnosticTag.Deprecated],
+                    },
+                    versionSupport: true,
+                },
+                hover: {
+                    contentFormat: ['markdown', 'plaintext'],
+                },
+            },
+        },
     };
-
     await connection.sendRequest(InitializeRequest.type, init);
 
-    const notification = new rpc.NotificationType<DidOpenTextDocumentParams>(
-        'textDocument/didOpen'
+    // Update the settings.
+    await connection.sendNotification(
+        new rpc.NotificationType<DidChangeConfigurationParams>('workspace/didChangeConfiguration'),
+        {
+            settings: {},
+        }
     );
 
-    await connection.sendNotification(notification, {
-        textDocument: {
-            uri: 'untitled:test.py',
-            languageId: 'python',
-            version: session.documentVersion,
-            text: 'print("Hello world")',
-        },
-    });
+    await connection.sendNotification(
+        new rpc.NotificationType<DidOpenTextDocumentParams>('textDocument/didOpen'),
+        {
+            textDocument: {
+                uri: 'untitled:test.py',
+                languageId: 'python',
+                version: session.documentVersion,
+                text: 'print("Hello world")',
+            },
+        }
+    );
+
+    connection.onNotification(
+        new rpc.NotificationType<PublishDiagnosticsParams>('textDocument.publishDiagnostics'),
+        (diagnostics) => {
+            console.log(
+                `Received diagnostics from language server: ${JSON.stringify(diagnostics)}`
+            );
+        }
+    );
+
+    connection.onNotification(
+        new rpc.NotificationType<LogMessageParams>('window/logMessage'),
+        (info) => {
+            console.log(`Received log message: ${info.message}`);
+        }
+    );
+
+    connection.onRequest(
+        new rpc.RequestType<ConfigurationParams, any, any>('workspace/configuration'),
+        (params) => {
+            console.log(`Received configuration param request: ${JSON.stringify(params)}}`);
+            return [];
+        }
+    );
 }
 
 async function installPyright(requestedVersion: string | undefined): Promise<InstallPyrightInfo> {
