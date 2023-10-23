@@ -50,6 +50,7 @@ export default function App() {
         <View style={styles.container}>
             <PlaygroundHeader />
             <MonacoEditor
+                lspClient={lspClient}
                 code={appState.code}
                 diagnostics={appState.diagnostics}
                 onUpdateCode={(code: string) => {
@@ -70,9 +71,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        height: '100%',
+        alignSelf: 'stretch',
     },
 });

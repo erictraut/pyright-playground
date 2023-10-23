@@ -3,8 +3,16 @@
  * Handles the state associated with a remote language server session.
  */
 
-import { Diagnostic } from 'vscode-languageserver-types';
-import { endpointGet, endpointPost, endpointPut } from './EndpointUtils';
+import { Diagnostic, Position, Range } from 'vscode-languageserver-types';
+import { endpointPost } from './EndpointUtils';
+
+export interface HoverInfo {
+    contents: {
+        kind: string;
+        value: string;
+    };
+    range: Range;
+}
 
 // Number of attempts to create a new session before giving up.
 const maxErrorCount = 4;
@@ -31,6 +39,23 @@ export class LspSession {
                         throw data;
                     }
                     return data.diagnostics;
+                })
+                .catch((err) => {
+                    throw err;
+                });
+        });
+    }
+
+    async getHoverForPosition(code: string, position: Position): Promise<HoverInfo | undefined> {
+        return this._doWithSession<HoverInfo>(async (sessionId) => {
+            const endpoint = appServerApiAddressPrefix + `session/${sessionId}/hover`;
+            return endpointPost(endpoint, {}, JSON.stringify({ code, position }))
+                .then(async (response) => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw data;
+                    }
+                    return data.hover;
                 })
                 .catch((err) => {
                     throw err;

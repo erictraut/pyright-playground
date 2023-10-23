@@ -20,9 +20,13 @@ import {
     DidChangeConfigurationParams,
     DidChangeTextDocumentParams,
     DidOpenTextDocumentParams,
+    Hover,
+    HoverParams,
+    HoverRequest,
     InitializeParams,
     InitializeRequest,
     LogMessageParams,
+    Position,
     PublishDiagnosticsParams,
 } from 'vscode-languageserver';
 
@@ -172,6 +176,29 @@ export class LspClient {
                 },
             });
         });
+    }
+
+    async getHoverInfo(code: string, position: Position): Promise<Hover | null> {
+        let documentVersion = this._documentVersion;
+        if (this._documentText !== code) {
+            documentVersion = this.updateTextDocument(code);
+        }
+
+        const hoverParams: HoverParams = {
+            textDocument: {
+                uri: documentUri,
+            },
+            position,
+        };
+
+        const result = await this._connection
+            .sendRequest(HoverRequest.type, hoverParams)
+            .catch((err) => {
+                // Don't return an error. Just return null (no hover info).
+                return null;
+            });
+
+        return result;
     }
 
     // Sends a new version of the text document to the language server.

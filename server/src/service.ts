@@ -6,6 +6,7 @@
 import { Request, Response } from 'express';
 import * as SessionManager from './sessionManager';
 import { Session } from './session';
+import { Position } from 'vscode-languageserver';
 
 interface SessionOptions {
     pythonVersion?: string;
@@ -14,6 +15,7 @@ interface SessionOptions {
 
 interface CodeWithOptions {
     code: string;
+    position?: Position;
 }
 
 // Creates a new language server session and returns its ID.
@@ -66,6 +68,30 @@ export function getDiagnostics(req: Request, res: Response) {
         });
 }
 
+// Given some Python code and a position within that code,
+// returns hover information.
+export function getHoverInfo(req: Request, res: Response) {
+    const session = validateSession(req, res);
+    const langClient = session?.langClient;
+    if (!langClient) {
+        return;
+    }
+
+    const codeWithOptions = validateCodeWithOptions(req, res, ['position']);
+    if (!codeWithOptions) {
+        return;
+    }
+
+    langClient
+        .getHoverInfo(codeWithOptions.code, codeWithOptions.position!)
+        .then((hover) => {
+            res.status(200).json({ hover });
+        })
+        .catch((err) => {
+            res.status(500).json({ message: err || 'An unexpected error occurred' });
+        });
+}
+
 function validateSessionOptions(req: Request, res: Response): SessionOptions | undefined {
     if (!req.body || typeof req.body !== 'object') {
         res.status(400).json({ message: 'Invalid request body' });
@@ -83,7 +109,13 @@ function validateSessionOptions(req: Request, res: Response): SessionOptions | u
     return { pyrightVersion };
 }
 
-function validateCodeWithOptions(req: Request, res: Response): CodeWithOptions | undefined {
+function validateCodeWithOptions(
+    req: Request,
+    res: Response,
+    options?: string[]
+): CodeWithOptions | undefined {
+    let foundError = false;
+
     if (!req.body || typeof req.body !== 'object') {
         res.status(400).json({ message: 'Invalid request body' });
         return undefined;
@@ -95,7 +127,28 @@ function validateCodeWithOptions(req: Request, res: Response): CodeWithOptions |
         return undefined;
     }
 
-    return { code };
+    const response: CodeWithOptions = { code };
+
+    options?.forEach((option) => {
+        if (option === 'position') {
+            const position = req.body.position;
+            if (
+                typeof position !== 'object' ||
+                typeof position.line !== 'number' ||
+                typeof position.character !== 'number'
+            ) {
+                res.status(400).json({ message: 'Invalid position' });
+                foundError = true;
+            } else {
+                response.position = {
+                    line: position.line,
+                    character: position.character,
+                };
+            }
+        }
+    });
+
+    return foundError ? undefined : response;
 }
 
 function validateSession(req: Request, res: Response): Session | undefined {

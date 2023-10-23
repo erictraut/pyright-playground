@@ -9,24 +9,13 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver-types';
+import { LspClient } from './LspClient';
 
 loader
     .init()
     .then((monaco) => {
         monaco.languages.registerHoverProvider('python', {
-            provideHover: (model, position) => {
-                const wordInfo = model.getWordAtPosition(position);
-
-                return {
-                    range: new monaco.Range(
-                        position.lineNumber,
-                        position.lineNumber,
-                        wordInfo.startColumn,
-                        wordInfo.endColumn
-                    ),
-                    contents: [{ value: wordInfo.word }],
-                };
-            },
+            provideHover: handleHoverRequest,
         });
     })
     .catch((error) => console.error('An error occurred during initialization of Monaco: ', error));
@@ -48,9 +37,17 @@ const options: monaco.editor.IStandaloneEditorConstructionOptions = {
     wordBasedSuggestions: false,
 };
 
+interface RegisteredModel {
+    model: monaco.editor.ITextModel;
+    lspClient: LspClient;
+}
+const registeredModels: RegisteredModel[] = [];
+
 export interface MonacoEditorProps {
+    lspClient: LspClient;
     code: string;
     diagnostics: Diagnostic[];
+
     onUpdateCode: (code: string) => void;
 }
 
@@ -67,29 +64,36 @@ export function MonacoEditor(props: MonacoEditorProps) {
 
     useEffect(() => {
         if (monacoRef?.current && editorRef?.current) {
-            setFileMarkers(monacoRef.current, editorRef.current, props.diagnostics);
+            const model: monaco.editor.ITextModel = editorRef.current.getModel();
+            setFileMarkers(monacoRef.current, model, props.diagnostics);
+
+            // Register the editor and the LSP Client so they can be accessed
+            // by the hover provider, etc.
+            registerModel(model, props.lspClient);
         }
     }, [props.diagnostics]);
 
     return (
-        <View style={styles.editor}>
-            <Editor
-                options={options}
-                language={'python'}
-                value={props.code}
-                theme="vs"
-                onChange={(value) => {
-                    props.onUpdateCode(value);
-                }}
-                onMount={handleEditorDidMount}
-            />
+        <View style={styles.container}>
+            <View style={styles.editor}>
+                <Editor
+                    options={options}
+                    language={'python'}
+                    value={props.code}
+                    theme="vs"
+                    onChange={(value) => {
+                        props.onUpdateCode(value);
+                    }}
+                    onMount={handleEditorDidMount}
+                />
+            </View>
         </View>
     );
 }
 
 function setFileMarkers(
     monacoInstance: any,
-    editor: monaco.editor.IStandaloneCodeEditor,
+    model: monaco.editor.ITextModel,
     diagnostics: Diagnostic[]
 ) {
     const markers: monaco.editor.IMarkerData[] = [];
@@ -107,7 +111,7 @@ function setFileMarkers(
         markers.push(markerData);
     });
 
-    monacoInstance.editor.setModelMarkers(editor.getModel(), 'pyright', markers);
+    monacoInstance.editor.setModelMarkers(model, 'pyright', markers);
 }
 
 function convertSeverity(severity: DiagnosticSeverity): monaco.MarkerSeverity {
@@ -136,10 +140,57 @@ function convertRange(range: Range): monaco.IRange {
     };
 }
 
+async function handleHoverRequest(
+    model: monaco.editor.ITextModel,
+    position: monaco.Position
+): Promise<monaco.languages.Hover> {
+    const lspClient = getLspClientForModel(model);
+    if (!lspClient) {
+        return null;
+    }
+
+    try {
+        const hoverInfo = await lspClient.getHoverForPosition(model.getValue(), {
+            line: position.lineNumber - 1,
+            character: position.column - 1,
+        });
+
+        return {
+            contents: [
+                {
+                    value: hoverInfo.contents.value,
+                },
+            ],
+            range: convertRange(hoverInfo.range),
+        };
+    } catch (err) {
+        return null;
+    }
+}
+
+// Register an instantiated text model (which backs a monaco editor
+// instance and its associated LSP client. This is a bit of a hack,
+// but it's required to support the various providers (e.g. hover).
+function registerModel(model: monaco.editor.ITextModel, lspClient: LspClient) {
+    if (registeredModels.find((m) => m.model === model)) {
+        return;
+    }
+
+    registeredModels.push({ model, lspClient });
+}
+
+function getLspClientForModel(model: monaco.editor.ITextModel): LspClient | undefined {
+    return registeredModels.find((m) => m.model === model)?.lspClient;
+}
+
 const styles = StyleSheet.create({
-    editor: {
+    container: {
         flex: 1,
-        marginVertical: 4,
+        padding: 4,
+    },
+    editor: {
+        position: 'absolute',
+        height: '100%',
         width: '100%',
     },
 });

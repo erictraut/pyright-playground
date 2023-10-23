@@ -5,7 +5,7 @@
 
 import cors from 'cors';
 import express from 'express';
-import { getDiagnostics, createSession, closeSession } from './service';
+import { getDiagnostics, createSession, closeSession, getHoverInfo } from './service';
 
 const router = express.Router();
 export default router;
@@ -22,4 +22,8 @@ router.delete('/session/:sid', (req, res) => {
 
 router.post('/session/:sid/diagnostics', (req, res) => {
     getDiagnostics(req, res);
+});
+
+router.post('/session/:sid/hover', (req, res) => {
+    getHoverInfo(req, res);
 });

@@ -4,8 +4,8 @@
  * talks to the remote language server via an LSP session.
  */
 
-import { Diagnostic } from 'vscode-languageserver-types';
-import { LspSession } from './LspSession';
+import { Diagnostic, Hover, Position } from 'vscode-languageserver-types';
+import { HoverInfo, LspSession } from './LspSession';
 
 // Wait for a small amount before sending the request to the server. This allows
 // the user to type multiple characters before we send the request.
@@ -34,6 +34,10 @@ export class LspClient {
             this._docVersion++;
             this._restartDiagnosticsTimer();
         }
+    }
+
+    async getHoverForPosition(code: string, position: Position): Promise<HoverInfo | undefined> {
+        return this._lspSession.getHoverForPosition(code, position);
     }
 
     private _restartDiagnosticsTimer() {
