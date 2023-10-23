@@ -56,13 +56,18 @@ export interface MonacoEditorProps {
 
 export function MonacoEditor(props: MonacoEditorProps) {
     const editorRef = useRef(null);
-    function handleEditorDidMount(editor: monaco.editor.IStandaloneCodeEditor) {
+    const monacoRef = useRef(null);
+    function handleEditorDidMount(
+        editor: monaco.editor.IStandaloneCodeEditor,
+        monacoInstance: any
+    ) {
         editorRef.current = editor;
+        monacoRef.current = monacoInstance;
     }
 
     useEffect(() => {
-        if (editorRef?.current) {
-            setFileMarkers(editorRef.current, props.diagnostics);
+        if (monacoRef?.current && editorRef?.current) {
+            setFileMarkers(monacoRef.current, editorRef.current, props.diagnostics);
         }
     }, [props.diagnostics]);
 
@@ -82,7 +87,11 @@ export function MonacoEditor(props: MonacoEditorProps) {
     );
 }
 
-function setFileMarkers(editor: monaco.editor.IStandaloneCodeEditor, diagnostics: Diagnostic[]) {
+function setFileMarkers(
+    monacoInstance: any,
+    editor: monaco.editor.IStandaloneCodeEditor,
+    diagnostics: Diagnostic[]
+) {
     const markers: monaco.editor.IMarkerData[] = [];
 
     diagnostics.forEach((diag) => {
@@ -90,7 +99,6 @@ function setFileMarkers(editor: monaco.editor.IStandaloneCodeEditor, diagnostics
             ...convertRange(diag.range),
             severity: convertSeverity(diag.severity),
             message: diag.message,
-            source: 'pyright',
         };
 
         if (diag.tags) {
@@ -99,7 +107,7 @@ function setFileMarkers(editor: monaco.editor.IStandaloneCodeEditor, diagnostics
         markers.push(markerData);
     });
 
-    monaco.editor.setModelMarkers(editor.getModel(), 'pyright', markers);
+    monacoInstance.editor.setModelMarkers(editor.getModel(), 'pyright', markers);
 }
 
 function convertSeverity(severity: DiagnosticSeverity): monaco.MarkerSeverity {

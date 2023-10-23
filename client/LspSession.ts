@@ -4,7 +4,7 @@
  */
 
 import { Diagnostic } from 'vscode-languageserver-types';
-import { endpointGet, endpointPut } from './EndpointUtils';
+import { endpointGet, endpointPost, endpointPut } from './EndpointUtils';
 
 // Number of attempts to create a new session before giving up.
 const maxErrorCount = 4;
@@ -15,7 +15,7 @@ let appServerApiAddressPrefix = 'https://pyright-play.azurewebsites.net/';
 // React Native code.
 const currentUrl = new URL(window.location.href);
 if (currentUrl.hostname === 'localhost') {
-    appServerApiAddressPrefix = 'http://localhost:3000/';
+    appServerApiAddressPrefix = 'http://localhost:3000/api/';
 }
 
 export class LspSession {
@@ -24,13 +24,17 @@ export class LspSession {
     async getDiagnostics(code: string): Promise<Diagnostic[]> {
         return this._doWithSession<Diagnostic[]>(async (sessionId) => {
             const endpoint = appServerApiAddressPrefix + `session/${sessionId}/diagnostics`;
-            return endpointGet(endpoint, {}, JSON.stringify({ code })).then(async (response) => {
-                const data = await response.json();
-                if (!response.ok) {
-                    throw data;
-                }
-                return data.diagnostics;
-            });
+            return endpointPost(endpoint, {}, JSON.stringify({ code }))
+                .then(async (response) => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw data;
+                    }
+                    return data.diagnostics;
+                })
+                .catch((err) => {
+                    throw err;
+                });
         });
     }
 
@@ -75,7 +79,7 @@ export class LspSession {
         }
 
         const endpoint = appServerApiAddressPrefix + `session`;
-        const sessionId = await endpointPut(endpoint, {}, JSON.stringify({})).then(
+        const sessionId = await endpointPost(endpoint, {}, JSON.stringify({})).then(
             async (response) => {
                 const data = await response.json();
                 if (!response.ok) {

@@ -8,20 +8,42 @@ import { StyleSheet, View } from 'react-native';
 import { MonacoEditor } from './MonacoEditor';
 import PlaygroundFooter from './PlaygroundFooter';
 import PlaygroundHeader from './PlaygroundHeader';
-import { LspSession } from './LspSession';
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types';
+import { LspClient } from './LspClient';
 
-const lspSession = new LspSession();
+const lspClient = new LspClient();
 
 export interface AppState {
     code: string;
     diagnostics: Diagnostic[];
+    clientError: string;
 }
 
 export default function App() {
     const [appState, setAppState] = useState<AppState>({
         code: '',
         diagnostics: [],
+        clientError: '',
+    });
+
+    lspClient.requestNotification({
+        onDiagnostics: (diagnostics: Diagnostic[]) => {
+            setAppState((prevState) => {
+                return {
+                    ...prevState,
+                    clientError: '',
+                    diagnostics,
+                };
+            });
+        },
+        onError: (message: string) => {
+            setAppState((prevState) => {
+                return {
+                    ...prevState,
+                    clientError: message,
+                };
+            });
+        },
     });
 
     return (
@@ -31,21 +53,11 @@ export default function App() {
                 code={appState.code}
                 diagnostics={appState.diagnostics}
                 onUpdateCode={(code: string) => {
+                    // Tell the LSP client about the code change.
+                    lspClient.updateCode(code);
+
                     setAppState((prevState) => {
-                        return {
-                            ...prevState,
-                            code,
-                            diagnostics: [
-                                {
-                                    range: {
-                                        start: { line: 0, character: 0 },
-                                        end: { line: 0, character: 1 },
-                                    },
-                                    message: 'Hello world',
-                                    severity: DiagnosticSeverity.Error,
-                                },
-                            ],
-                        };
+                        return { ...prevState, code };
                     });
                 }}
             />
