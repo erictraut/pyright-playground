@@ -18,7 +18,11 @@ export interface InstallPyrightInfo {
 }
 
 // Map of sessions indexed by ID
-const activeSessions = new Map<string, Session>();
+const activeSessions = new Map<SessionId, Session>();
+
+export function getSessionById(id: SessionId) {
+    return activeSessions.get(id);
+}
 
 // Allocate a new session and return its ID.
 export async function createNewSession(pyrightVersion: string | undefined): Promise<SessionId> {

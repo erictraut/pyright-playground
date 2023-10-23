@@ -12,7 +12,7 @@ export type SessionId = string;
 
 export interface Session {
     // A unique ID for this session.
-    id: SessionId;
+    readonly id: SessionId;
 
     // Child process running the language server for this session.
     langServerProcess?: ChildProcess;

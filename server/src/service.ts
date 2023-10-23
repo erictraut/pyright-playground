@@ -5,6 +5,7 @@
 
 import { Request, Response } from 'express';
 import * as SessionManager from './sessionManager';
+import { Session } from './session';
 
 interface SessionOptions {
     pythonVersion?: string;
@@ -27,23 +28,42 @@ export function createSession(req: Request, res: Response) {
             res.status(200).json({ sessionId });
         })
         .catch((err) => {
-            res.status(500).json({ message: err || 'An internal error occurred' });
+            res.status(500).json({ message: err || 'An unexpected error occurred' });
         });
 }
 
 export function closeSession(req: Request, res: Response) {
-    res.status(500).json({ message: 'Not implemented' });
+    const session = validateSession(req, res);
+    if (!session) {
+        return;
+    }
+
+    SessionManager.closeSession(session.id);
+    res.status(200);
 }
 
 // Given some Python code and associated options, returns
 // a list of diagnostics.
 export function getDiagnostics(req: Request, res: Response) {
-    const parsedRequest = validateCodeWithOptions(req, res);
-    if (!parsedRequest) {
+    const session = validateSession(req, res);
+    const langClient = session?.langClient;
+    if (!langClient) {
         return;
     }
 
-    res.status(500).json({ message: 'Not implemented' });
+    const codeWithOptions = validateCodeWithOptions(req, res);
+    if (!codeWithOptions) {
+        return;
+    }
+
+    langClient
+        .getDiagnostics(codeWithOptions.code)
+        .then((diagnostics) => {
+            res.status(200).json({ diagnostics });
+        })
+        .catch((err) => {
+            res.status(500).json({ message: err || 'An unexpected error occurred' });
+        });
 }
 
 function validateSessionOptions(req: Request, res: Response): SessionOptions | undefined {
@@ -76,4 +96,20 @@ function validateCodeWithOptions(req: Request, res: Response): CodeWithOptions |
     }
 
     return { code };
+}
+
+function validateSession(req: Request, res: Response): Session | undefined {
+    const sessionId = req.params.sid;
+    if (!sessionId || typeof sessionId !== 'string') {
+        res.status(400).json({ message: 'Invalid session ID' });
+        return undefined;
+    }
+
+    const session = SessionManager.getSessionById(sessionId);
+    if (!session?.langClient) {
+        res.status(400).json({ message: 'Unknown session ID' });
+        return undefined;
+    }
+
+    return session;
 }

@@ -15,8 +15,10 @@ import {
 } from 'vscode-jsonrpc/node';
 import {
     ConfigurationParams,
+    Diagnostic,
     DiagnosticTag,
     DidChangeConfigurationParams,
+    DidChangeTextDocumentParams,
     DidOpenTextDocumentParams,
     InitializeParams,
     InitializeRequest,
@@ -24,14 +26,22 @@ import {
     PublishDiagnosticsParams,
 } from 'vscode-languageserver';
 
+interface DiagnosticRequest {
+    callback: (diags: Diagnostic[]) => void;
+}
+
+const documentUri = 'untitled:untitled.py';
+
 export class LspClient {
     private _connection: MessageConnection;
     private _documentVersion = 1;
     private _documentText = '';
+    private _documentDiags: PublishDiagnosticsParams | undefined;
+    private _pendingDiagRequests = new Map<number, DiagnosticRequest[]>();
 
     constructor(langServer: ChildProcess) {
-        langServer.stderr?.on('data', (data) => LspClient._handleDataLoggedByLanguageServer(data));
-        langServer.stdout?.on('data', (data) => LspClient._handleDataLoggedByLanguageServer(data));
+        langServer.stderr?.on('data', (data) => LspClient._logServerData(data));
+        langServer.stdout?.on('data', (data) => LspClient._logServerData(data));
 
         this._connection = createMessageConnection(
             new IPCMessageReader(langServer),
@@ -77,7 +87,7 @@ export class LspClient {
             new NotificationType<DidOpenTextDocumentParams>('textDocument/didOpen'),
             {
                 textDocument: {
-                    uri: 'untitled:untitled.py',
+                    uri: documentUri,
                     languageId: 'python',
                     version: this._documentVersion,
                     text: this._documentText,
@@ -88,10 +98,27 @@ export class LspClient {
         // Receive diagnostics from the language server.
         this._connection.onNotification(
             new NotificationType<PublishDiagnosticsParams>('textDocument/publishDiagnostics'),
-            (diagnostics) => {
-                console.log(
-                    `Received diagnostics from language server: ${JSON.stringify(diagnostics)}`
-                );
+            (diagInfo) => {
+                const diagVersion = diagInfo.version ?? -1;
+
+                console.log(`Received diagnostics for version: ${diagVersion}`);
+
+                // Update the cached diagnostics.
+                if (
+                    this._documentDiags === undefined ||
+                    this._documentDiags.version! < diagVersion
+                ) {
+                    this._documentDiags = diagInfo;
+                }
+
+                // Resolve any pending diagnostic requests.
+                const pendingRequests = this._pendingDiagRequests.get(diagVersion) ?? [];
+                console.log(`Calling ${pendingRequests.length} callbacks`);
+                this._pendingDiagRequests.delete(diagVersion);
+
+                for (const request of pendingRequests) {
+                    request.callback(diagInfo.diagnostics);
+                }
             }
         );
 
@@ -113,7 +140,67 @@ export class LspClient {
         );
     }
 
-    private static _handleDataLoggedByLanguageServer(data: any) {
+    async getDiagnostics(code: string): Promise<Diagnostic[]> {
+        const codeChanged = this._documentText !== code;
+
+        // If the code hasn't changed since the last time we received
+        // a code update, return the cached diagnostics.
+        if (!codeChanged && this._documentDiags) {
+            return this._documentDiags.diagnostics;
+        }
+
+        // The diagnostics will come back asynchronously, so
+        // return a promise.
+        return new Promise<Diagnostic[]>((resolve, reject) => {
+            let documentVersion = this._documentVersion;
+
+            if (codeChanged) {
+                documentVersion = this.updateTextDocument(code);
+            }
+
+            // Queue a request for diagnostics.
+            let requestList = this._pendingDiagRequests.get(documentVersion);
+            if (!requestList) {
+                requestList = [];
+                this._pendingDiagRequests.set(documentVersion, requestList);
+            }
+
+            requestList.push({
+                callback: (diagnostics) => {
+                    console.log(`Diagnostic callback ${JSON.stringify(diagnostics)}}`);
+                    resolve(diagnostics);
+                },
+            });
+        });
+    }
+
+    // Sends a new version of the text document to the language server.
+    private updateTextDocument(code: string): number {
+        let documentVersion = ++this._documentVersion;
+        this._documentText = code;
+
+        console.log(`Updating text document to version ${documentVersion}`);
+
+        // Send the updated text to the language server.
+        this._connection.sendNotification(
+            new NotificationType<DidChangeTextDocumentParams>('textDocument/didChange'),
+            {
+                textDocument: {
+                    uri: documentUri,
+                    version: documentVersion,
+                },
+                contentChanges: [
+                    {
+                        text: code,
+                    },
+                ],
+            }
+        );
+
+        return documentVersion;
+    }
+
+    private static _logServerData(data: any) {
         console.log(
             `Logged from pyright language server: ${
                 typeof data === 'string' ? data : data.toString('utf8')
