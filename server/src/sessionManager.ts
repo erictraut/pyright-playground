@@ -20,12 +20,26 @@ export interface InstallPyrightInfo {
 // Map of sessions indexed by ID
 const activeSessions = new Map<SessionId, Session>();
 
+// Maximum time a session can be idle before it is closed.
+const maxSessionLifetime = 1 * 60 * 1000; // 1 minute
+
+// Active lifetime timer for harvesting old sessions.
+let lifetimeTimer: NodeJS.Timeout | undefined;
+
 export function getSessionById(id: SessionId) {
-    return activeSessions.get(id);
+    const session = activeSessions.get(id);
+
+    if (session) {
+        session.lastAccessTime = Date.now();
+    }
+
+    return session;
 }
 
 // Allocate a new session and return its ID.
 export async function createNewSession(pyrightVersion: string | undefined): Promise<SessionId> {
+    scheduleSessionLifetimeTimer();
+
     return installPyright(pyrightVersion).then((info) => {
         return startSession(info.localDirectory);
     });
@@ -183,4 +197,31 @@ async function installPyright(requestedVersion: string | undefined): Promise<Ins
             }
         );
     });
+}
+
+// If there is no session lifetime timer, schedule one.
+function scheduleSessionLifetimeTimer() {
+    if (lifetimeTimer) {
+        return;
+    }
+
+    const lifetimeTimerFrequency = 1 * 60 * 1000; // 1 minute
+
+    lifetimeTimer = setTimeout(() => {
+        lifetimeTimer = undefined;
+
+        const curTime = Date.now();
+
+        activeSessions.forEach((session, sessionId) => {
+            if (curTime - session.lastAccessTime > maxSessionLifetime) {
+                console.log(`Session ${sessionId} timed out; deleting`);
+                closeSession(sessionId);
+                activeSessions.delete(sessionId);
+            }
+        });
+
+        if (activeSessions.size === 0) {
+            scheduleSessionLifetimeTimer();
+        }
+    }, lifetimeTimerFrequency);
 }

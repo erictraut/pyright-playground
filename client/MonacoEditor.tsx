@@ -6,8 +6,9 @@
 
 import Editor, { loader } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { FC, useRef } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver-types';
 
 loader
     .init()
@@ -30,37 +31,102 @@ loader
     })
     .catch((error) => console.error('An error occurred during initialization of Monaco: ', error));
 
-export const MonacoEditor: FC = () => {
-    const monacoEl = useRef(null);
+const options: monaco.editor.IStandaloneEditorConstructionOptions = {
+    selectOnLineNumbers: true,
+    minimap: { enabled: false },
+    fixedOverflowWidgets: true,
+    tabCompletion: 'on',
+    hover: { enabled: true },
+    scrollBeyondLastLine: false,
+    autoClosingOvertype: 'always',
+    autoSurround: 'quotes',
+    autoIndent: 'full',
+    // The default settings prefer "Menlo", but "Monaco" looks better
+    // for our purposes. Swap the order so Monaco is used if available.
+    fontFamily: 'Monaco, Menlo, "Courier New", monospace',
+    showUnused: true,
+    wordBasedSuggestions: false,
+};
 
-    const options: monaco.editor.IStandaloneEditorConstructionOptions = {
-        selectOnLineNumbers: true,
-        minimap: {
-            enabled: false,
-        },
-        fixedOverflowWidgets: true,
-        tabCompletion: 'on',
-        hover: {
-            enabled: true,
-        },
-        scrollBeyondLastLine: false,
-        autoClosingOvertype: 'always',
-        autoSurround: 'quotes',
-        autoIndent: 'full',
-        // The default settings prefer "Menlo", but "Monaco" looks better
-        // for our purposes. Swap the order so Monaco is used if available.
-        fontFamily: 'Monaco, Menlo, "Courier New", monospace',
-        showUnused: true,
-        wordBasedSuggestions: false,
-        theme: 'vs',
-    };
+export interface MonacoEditorProps {
+    code: string;
+    diagnostics: Diagnostic[];
+    onUpdateCode: (code: string) => void;
+}
+
+export function MonacoEditor(props: MonacoEditorProps) {
+    const editorRef = useRef(null);
+    function handleEditorDidMount(editor: monaco.editor.IStandaloneCodeEditor) {
+        editorRef.current = editor;
+    }
+
+    useEffect(() => {
+        if (editorRef?.current) {
+            setFileMarkers(editorRef.current, props.diagnostics);
+        }
+    }, [props.diagnostics]);
 
     return (
-        <View style={styles.editor} ref={monacoEl}>
-            <Editor options={options} defaultLanguage={'python'} />
+        <View style={styles.editor}>
+            <Editor
+                options={options}
+                language={'python'}
+                value={props.code}
+                theme="vs"
+                onChange={(value) => {
+                    props.onUpdateCode(value);
+                }}
+                onMount={handleEditorDidMount}
+            />
         </View>
     );
-};
+}
+
+function setFileMarkers(editor: monaco.editor.IStandaloneCodeEditor, diagnostics: Diagnostic[]) {
+    const markers: monaco.editor.IMarkerData[] = [];
+
+    diagnostics.forEach((diag) => {
+        const markerData: monaco.editor.IMarkerData = {
+            ...convertRange(diag.range),
+            severity: convertSeverity(diag.severity),
+            message: diag.message,
+            source: 'pyright',
+        };
+
+        if (diag.tags) {
+            markerData.tags = diag.tags;
+        }
+        markers.push(markerData);
+    });
+
+    monaco.editor.setModelMarkers(editor.getModel(), 'pyright', markers);
+}
+
+function convertSeverity(severity: DiagnosticSeverity): monaco.MarkerSeverity {
+    switch (severity) {
+        case DiagnosticSeverity.Error:
+        default:
+            return monaco.MarkerSeverity.Error;
+
+        case DiagnosticSeverity.Warning:
+            return monaco.MarkerSeverity.Warning;
+
+        case DiagnosticSeverity.Information:
+            return monaco.MarkerSeverity.Info;
+
+        case DiagnosticSeverity.Hint:
+            return monaco.MarkerSeverity.Hint;
+    }
+}
+
+function convertRange(range: Range): monaco.IRange {
+    return {
+        startLineNumber: range.start.line + 1,
+        startColumn: range.start.character + 1,
+        endLineNumber: range.end.line + 1,
+        endColumn: range.end.character + 1,
+    };
+}
 
 const styles = StyleSheet.create({
     editor: {
