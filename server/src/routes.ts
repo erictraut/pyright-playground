@@ -3,14 +3,20 @@
  * Defines endpoint routes supported by this app server.
  */
 
-import cors from 'cors';
+import cors, { CorsOptions } from 'cors';
 import express from 'express';
 import { getDiagnostics, createSession, closeSession, getHoverInfo } from './service';
 
 const router = express.Router();
 export default router;
 
-router.use(cors());
+// Configure CORS middleware.
+// TODO - need to add proper configuration for CORS
+const corsOptions: CorsOptions = {
+    origin: '*',
+};
+
+router.use(cors(corsOptions));
 
 router.post('/session', (req, res) => {
     createSession(req, res);
