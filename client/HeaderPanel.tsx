@@ -7,7 +7,9 @@ import { Image, Linking, StyleSheet, Text, View } from 'react-native';
 import { useAssets } from 'expo-asset';
 import IconButton from './IconButton';
 
-export default function PlaygroundHeader() {
+const headerIconButtonSize = 20;
+
+export default function HeaderPanel() {
     const [assets, error] = useAssets([require('./assets/pyright_bw.png')]);
 
     let image = null;
@@ -23,8 +25,17 @@ export default function PlaygroundHeader() {
             </Text>
             <View style={styles.controlsPanel}>
                 <IconButton
+                    iconName="setting"
+                    iconSize={headerIconButtonSize}
+                    color={'#fff'}
+                    title={'Playground settings'}
+                    onPress={() => {
+                        // TODO
+                    }}
+                />
+                <IconButton
                     iconName="github"
-                    iconSize={16}
+                    iconSize={headerIconButtonSize}
                     color={'#fff'}
                     title={'Go to GitHub repository'}
                     onPress={() => {
@@ -33,7 +44,7 @@ export default function PlaygroundHeader() {
                 />
                 <IconButton
                     iconName="questioncircle"
-                    iconSize={16}
+                    iconSize={headerIconButtonSize}
                     color={'#fff'}
                     title={'About Pyright Playground'}
                     onPress={() => {

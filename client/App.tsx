@@ -8,7 +8,7 @@ import { StyleSheet, View } from 'react-native';
 import { Diagnostic } from 'vscode-languageserver-types';
 import { LspClient } from './LspClient';
 import { MonacoEditor } from './MonacoEditor';
-import PlaygroundHeader from './PlaygroundHeader';
+import HeaderPanel from './HeaderPanel';
 import { ProblemsPanel } from './ProblemsPanel';
 
 const lspClient = new LspClient();
@@ -49,7 +49,7 @@ export default function App() {
 
     return (
         <View style={styles.container}>
-            <PlaygroundHeader />
+            <HeaderPanel />
             <MonacoEditor
                 ref={editorRef}
                 lspClient={lspClient}

@@ -5,12 +5,12 @@
 
 import Icon from '@expo/vector-icons/AntDesign';
 import {
-    View,
+    GestureResponderEvent,
     Pressable,
     StyleProp,
     StyleSheet,
+    View,
     ViewStyle,
-    GestureResponderEvent,
 } from 'react-native';
 import { useHover } from './HoverHook';
 
@@ -32,6 +32,7 @@ export default function IconButton({
     iconSize,
     disabled,
     color,
+    title,
     hoverColor,
     disableColor,
     backgroundStyle,
@@ -50,21 +51,23 @@ export default function IconButton({
     }
 
     return (
-        <Pressable
-            ref={hoverRef}
-            onPress={onPress}
-            disabled={disabled}
-            style={[
-                styles.defaultBackgroundStyle,
-                disabled ? styles.disabled : undefined,
-                backgroundStyle,
-                isHovered ? hoverBackgroundStyle : undefined,
-            ]}
-        >
-            <View style={styles.container}>
-                <Icon name={iconName as any} size={iconSize} color={effectiveColor} />
-            </View>
-        </Pressable>
+        <div title={title}>
+            <Pressable
+                ref={hoverRef}
+                onPress={onPress}
+                disabled={disabled}
+                style={[
+                    styles.defaultBackgroundStyle,
+                    disabled ? styles.disabled : undefined,
+                    backgroundStyle,
+                    isHovered ? hoverBackgroundStyle : undefined,
+                ]}
+            >
+                <View style={styles.container}>
+                    <Icon name={iconName as any} size={iconSize} color={effectiveColor} />
+                </View>
+            </Pressable>
+        </div>
     );
 }
 
