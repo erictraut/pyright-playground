@@ -11,8 +11,9 @@ import { RightPanelType } from './RightPanel';
 const headerIconButtonSize = 20;
 
 export interface HeaderPanelProps {
-    rightPanelDisplayed: RightPanelType;
-    onShowRightPanel: (rightPanelToDisplay: RightPanelType) => void;
+    isRightPanelDisplayed: boolean;
+    rightPanelType: RightPanelType;
+    onShowRightPanel: (rightPanelType?: RightPanelType) => void;
 }
 
 export default function HeaderPanel(props: HeaderPanelProps) {
@@ -49,7 +50,10 @@ export default function HeaderPanel(props: HeaderPanelProps) {
                 <IconButton
                     iconName="setting"
                     iconSize={headerIconButtonSize}
-                    disabled={props.rightPanelDisplayed === RightPanelType.Settings}
+                    disabled={
+                        props.isRightPanelDisplayed &&
+                        props.rightPanelType === RightPanelType.Settings
+                    }
                     color={'#fff'}
                     title={'Playground settings'}
                     onPress={() => {
@@ -57,9 +61,11 @@ export default function HeaderPanel(props: HeaderPanelProps) {
                     }}
                 />
                 <IconButton
-                    iconName="questioncircle"
+                    iconName="questioncircleo"
                     iconSize={headerIconButtonSize}
-                    disabled={props.rightPanelDisplayed === RightPanelType.About}
+                    disabled={
+                        props.isRightPanelDisplayed && props.rightPanelType === RightPanelType.About
+                    }
                     color={'#fff'}
                     title={'About Pyright Playground'}
                     onPress={() => {

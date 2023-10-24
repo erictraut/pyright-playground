@@ -22,7 +22,8 @@ export interface AppState {
     code: string;
     settings: PlaygroundSettings;
     diagnostics: Diagnostic[];
-    rightPanelToDisplay: RightPanelType;
+    isRightPanelDisplayed: boolean;
+    rightPanelType: RightPanelType;
 }
 
 export default function App() {
@@ -34,7 +35,8 @@ export default function App() {
             configOverrides: {},
         },
         diagnostics: [],
-        rightPanelToDisplay: RightPanelType.Settings,
+        isRightPanelDisplayed: true,
+        rightPanelType: RightPanelType.Settings,
     });
 
     useEffect(() => {
@@ -50,6 +52,7 @@ export default function App() {
                     ...prevState,
                     gotInitialState: true,
                     code: initialState.code,
+                    settings: initialState.settings,
                 };
             });
         }
@@ -87,9 +90,13 @@ export default function App() {
         },
     });
 
-    function onShowRightPanel(rightPanelToDisplay: RightPanelType) {
+    function onShowRightPanel(rightPanelType?: RightPanelType) {
         setAppState((prevState) => {
-            return { ...prevState, rightPanelToDisplay };
+            return {
+                ...prevState,
+                rightPanelType: rightPanelType ?? prevState.rightPanelType,
+                isRightPanelDisplayed: rightPanelType !== undefined,
+            };
         });
     }
 
@@ -97,7 +104,8 @@ export default function App() {
         <MenuProvider>
             <View style={styles.container}>
                 <HeaderPanel
-                    rightPanelDisplayed={appState.rightPanelToDisplay}
+                    isRightPanelDisplayed={appState.isRightPanelDisplayed}
+                    rightPanelType={appState.rightPanelType}
                     onShowRightPanel={onShowRightPanel}
                 />
                 <View style={styles.middlePanelContainer}>
@@ -116,7 +124,8 @@ export default function App() {
                         }}
                     />
                     <RightPanel
-                        rightPanelDisplayed={appState.rightPanelToDisplay}
+                        isRightPanelDisplayed={appState.isRightPanelDisplayed}
+                        rightPanelType={appState.rightPanelType}
                         onShowRightPanel={onShowRightPanel}
                         settings={appState.settings}
                         onUpdateSettings={(settings: PlaygroundSettings) => {
@@ -142,11 +151,10 @@ export default function App() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignSelf: 'stretch',
+        flexDirection: 'column',
     },
     middlePanelContainer: {
         flex: 1,
         flexDirection: 'row',
-        alignSelf: 'stretch',
     },
 });

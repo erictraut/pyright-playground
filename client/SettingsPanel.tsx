@@ -6,7 +6,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { SettingsCheckbox } from './SettingsCheckBox';
 import { PlaygroundSettings } from './PlaygroundSettings';
-import { configSettings } from './PyrightConfigSettings';
+import { configSettings, configSettingsAlphabetized } from './PyrightConfigSettings';
 
 export interface SettingsPanelProps {
     settings: PlaygroundSettings;
@@ -20,7 +20,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
             <SettingsCheckbox
                 key={'strict'}
                 label={'strict'}
-                title={'Enable set of stricter type checking options'}
+                title={'Enable set of strict type checking options'}
                 disabled={false}
                 value={!!props.settings.strictMode}
                 onChange={() => {
@@ -30,15 +30,17 @@ export function SettingsPanel(props: SettingsPanelProps) {
                     });
                 }}
             />
-            {configSettings.map((setting) => {
+            {configSettingsAlphabetized.map((setting) => {
                 const isEnabled = !!props.settings.configOverrides[setting.name];
                 return (
                     <SettingsCheckbox
                         key={setting.name}
                         label={setting.name}
                         title={setting.description}
-                        disabled={false}
-                        value={isEnabled}
+                        disabled={setting.isEnabledInStrict && props.settings.strictMode}
+                        value={
+                            isEnabled || (setting.isEnabledInStrict && props.settings.strictMode)
+                        }
                         onChange={() => {
                             props.onUpdateSettings({
                                 ...props.settings,
@@ -62,6 +64,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
             <ComingSoon />
             <SettingsDivider />
             <SettingsHeader headerText={'LANGUAGE'} />
+            <ComingSoon />
+            <SettingsDivider />
+            <SettingsHeader headerText={'RESET'} />
             <ComingSoon />
         </View>
     );

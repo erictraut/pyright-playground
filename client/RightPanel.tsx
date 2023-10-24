@@ -11,15 +11,15 @@ import { SettingsPanel } from './SettingsPanel';
 import { PlaygroundSettings } from './PlaygroundSettings';
 
 export enum RightPanelType {
-    None,
     About,
     Settings,
     Share,
 }
 
 export interface RightPanelProps {
-    rightPanelDisplayed: RightPanelType;
-    onShowRightPanel: (rightPanelToDisplay: RightPanelType) => void;
+    isRightPanelDisplayed: boolean;
+    rightPanelType: RightPanelType;
+    onShowRightPanel: (rightPanelType?: RightPanelType) => void;
     settings: PlaygroundSettings;
     onUpdateSettings: (settings: PlaygroundSettings) => void;
 }
@@ -29,7 +29,7 @@ export function RightPanel(props: RightPanelProps) {
     let panelContents: JSX.Element | undefined;
     let headerTitle = '';
 
-    switch (props.rightPanelDisplayed) {
+    switch (props.rightPanelType) {
         case RightPanelType.About:
             panelContents = <AboutPanel />;
             headerTitle = 'Using Pyright Playground';
@@ -56,12 +56,12 @@ export function RightPanel(props: RightPanelProps) {
 
     useEffect(() => {
         Animated.timing(widthAnimation, {
-            toValue: panelContents ? rightPanelWidth : 0,
+            toValue: props.isRightPanelDisplayed ? rightPanelWidth : 0,
             duration: 250,
             useNativeDriver: false,
             easing: Easing.ease,
         }).start();
-    }, [widthAnimation, props.rightPanelDisplayed]);
+    }, [widthAnimation, props.isRightPanelDisplayed]);
 
     return (
         <Animated.View style={[styles.animatedContainer, { width: widthAnimation }]}>
@@ -78,7 +78,7 @@ export function RightPanel(props: RightPanelProps) {
                             hoverColor={'#000'}
                             title={'Close panel'}
                             onPress={() => {
-                                props.onShowRightPanel(RightPanelType.None);
+                                props.onShowRightPanel();
                             }}
                         />
                     </View>
@@ -100,7 +100,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#f8f8ff',
     },
     contentContainer: {
-        flex: 1,
+        flexGrow: 1,
+        flexShrink: 0,
+        flexBasis: 0,
         flexDirection: 'column',
         alignSelf: 'stretch',
     },

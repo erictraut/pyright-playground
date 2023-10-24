@@ -266,3 +266,7 @@ export const configSettings: PyrightConfigSetting[] = [
         isEnabledInStrict: false,
     },
 ];
+
+export const configSettingsAlphabetized = configSettings.sort((a, b) => {
+    return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+});

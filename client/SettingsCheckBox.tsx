@@ -26,6 +26,7 @@ export function SettingsCheckbox(props: SettingsCheckboxProps) {
             onPress={() => {
                 props.onChange(!props.value);
             }}
+            disabled={props.disabled}
         >
             <View
                 style={[
@@ -38,7 +39,7 @@ export function SettingsCheckbox(props: SettingsCheckboxProps) {
                     <Icon
                         name={'check'}
                         size={14}
-                        color={props.disabled ? '#eee' : isHovered ? '#000' : '#333'}
+                        color={props.disabled ? '#aaa' : isHovered ? '#000' : '#333'}
                     />
                 ) : undefined}
             </View>
@@ -64,6 +65,7 @@ const styles = StyleSheet.create({
         paddingVertical: 4,
         paddingHorizontal: 8,
         alignItems: 'center',
+        alignSelf: 'flex-start',
     },
     checkbox: {
         width: 16,
@@ -79,6 +81,7 @@ const styles = StyleSheet.create({
         borderColor: '#000',
     },
     checkboxText: {
+        flex: -1,
         marginLeft: 8,
         fontSize: 12,
         color: '#333',
