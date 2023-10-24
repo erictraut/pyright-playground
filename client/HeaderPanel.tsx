@@ -3,14 +3,18 @@
  * Header bar with embedded controls for the playground.
  */
 
-import { Image, Linking, StyleSheet, Text, View } from 'react-native';
+import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAssets } from 'expo-asset';
 import IconButton from './IconButton';
+import { useRef, useState } from 'react';
+import { Menu, MenuRef } from './Menu';
 
 const headerIconButtonSize = 20;
 
 export default function HeaderPanel() {
     const [assets, error] = useAssets([require('./assets/pyright_bw.png')]);
+    const aboutBoxPopup = useRef<MenuRef>(null);
+    const settingsPopup = useRef<MenuRef>(null);
 
     let image = null;
     if (!error && assets) {
@@ -19,7 +23,13 @@ export default function HeaderPanel() {
 
     return (
         <View style={styles.container}>
-            {image}
+            <Pressable
+                onPress={() => {
+                    Linking.openURL('https://github.com/microsoft/pyright');
+                }}
+            >
+                {image}
+            </Pressable>
             <Text style={styles.titleText} selectable={false}>
                 Pyright Playground
             </Text>
@@ -30,7 +40,7 @@ export default function HeaderPanel() {
                     color={'#fff'}
                     title={'Playground settings'}
                     onPress={() => {
-                        // TODO
+                        settingsPopup.current?.open();
                     }}
                 />
                 <IconButton
@@ -48,10 +58,23 @@ export default function HeaderPanel() {
                     color={'#fff'}
                     title={'About Pyright Playground'}
                     onPress={() => {
-                        // TODO
+                        aboutBoxPopup.current?.open();
                     }}
                 />
             </View>
+            <Menu ref={aboutBoxPopup} name={'aboutBox'} isPopup={true}>
+                <View style={[styles.popupContainer, styles.aboutBox]}>
+                    <Text style={styles.aboutText}>
+                        {'Type or paste Python code into the text editor, and Pyright (a static ' +
+                            'type checker for Python) will report any errors it finds.'}
+                    </Text>
+                </View>
+            </Menu>
+            <Menu ref={settingsPopup} name={'settingsBox'} isPopup={true}>
+                <View style={[styles.popupContainer, styles.settingsBox]}>
+                    <Text style={styles.aboutText}>{'Settings are currently unimplemented.'}</Text>
+                </View>
+            </Menu>
         </View>
     );
 }
@@ -81,5 +104,29 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'flex-end',
+    },
+    popupContainer: {
+        backgroundColor: 'white',
+        flex: 0,
+        borderRadius: 4,
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: '#ccc',
+        padding: 8,
+    },
+    aboutBox: {
+        minWidth: 300,
+        maxWidth: 400,
+    },
+    settingsBox: {
+        minWidth: 300,
+        maxWidth: 600,
+    },
+    aboutTextBold: {
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    aboutText: {
+        fontSize: 14,
     },
 });

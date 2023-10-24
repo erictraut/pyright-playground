@@ -65,7 +65,7 @@ export class LspClient {
             })
             .catch((err) => {
                 if (this._notifications.onError) {
-                    this._notifications.onError(err.toString());
+                    this._notifications.onError(err.message);
                 }
             });
     }

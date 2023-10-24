@@ -117,7 +117,6 @@ export class LspClient {
 
                 // Resolve any pending diagnostic requests.
                 const pendingRequests = this._pendingDiagRequests.get(diagVersion) ?? [];
-                console.log(`Calling ${pendingRequests.length} callbacks`);
                 this._pendingDiagRequests.delete(diagVersion);
 
                 for (const request of pendingRequests) {

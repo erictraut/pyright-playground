@@ -140,11 +140,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#eee',
     },
     diagnosticIconContainer: {
-        marginTop: 2,
         marginRight: 8,
     },
     diagnosticTextContainer: {},
     diagnosticText: {
-        fontSize: 14,
+        fontSize: 12,
     },
 });
