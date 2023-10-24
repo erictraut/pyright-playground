@@ -17,7 +17,7 @@ export interface HoverInfo {
 // Number of attempts to create a new session before giving up.
 const maxErrorCount = 4;
 
-let appServerApiAddressPrefix = 'https://pyright-play.azurewebsites.net/';
+let appServerApiAddressPrefix = 'https://pyright-playground.azurewebsites.net/';
 
 // TODO - this is for local debugging in the browser. Remove for
 // React Native code.
