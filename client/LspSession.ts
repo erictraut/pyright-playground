@@ -72,7 +72,7 @@ export class LspSession {
 
         while (true) {
             if (errorCount > maxErrorCount) {
-                throw new Error('Could not connect to pyright language server');
+                throw new Error('Could not connect to service');
             }
 
             try {
