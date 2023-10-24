@@ -1,0 +1,8 @@
+{
+  "name": "pyright-playground",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build": "cd client && npm i && npm run build:web && cd ../server && npm i && npm run build && cd .."
+  }
+}
