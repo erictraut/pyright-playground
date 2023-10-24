@@ -31,21 +31,17 @@ export function ProblemsPanel(props: ProblemsPanelProps) {
                     </Text>
                 </View>
             </View>
-            <View style={styles.listContainer}>
-                <ScrollView>
-                    <View>
-                        {filteredDiagnostics.map((diag, index) => {
-                            return (
-                                <ProblemItem
-                                    key={index}
-                                    diagnostic={diag}
-                                    onSelectRange={props.onSelectRange}
-                                />
-                            );
-                        })}
-                    </View>
-                </ScrollView>
-            </View>
+            <ScrollView>
+                {filteredDiagnostics.map((diag, index) => {
+                    return (
+                        <ProblemItem
+                            key={index}
+                            diagnostic={diag}
+                            onSelectRange={props.onSelectRange}
+                        />
+                    );
+                })}
+            </ScrollView>
         </View>
     );
 }
@@ -116,12 +112,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignSelf: 'stretch',
         alignItems: 'center',
-    },
-    listContainer: {
-        flex: 1,
-        backgroundColor: '#fff',
-        flexDirection: 'row',
-        alignSelf: 'stretch',
     },
     problemText: {
         marginBottom: 2,

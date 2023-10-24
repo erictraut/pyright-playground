@@ -6,9 +6,6 @@
 import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAssets } from 'expo-asset';
 import IconButton from './IconButton';
-import { useRef } from 'react';
-import { Menu, MenuRef } from './Menu';
-import TextWithLink from './TextWithLink';
 import { RightPanelType } from './RightPanel';
 
 const headerIconButtonSize = 20;
@@ -39,7 +36,7 @@ export default function HeaderPanel(props: HeaderPanelProps) {
                 Pyright Playground
             </Text>
             <View style={styles.controlsPanel}>
-                <IconButton
+                {/* <IconButton
                     iconName="link"
                     iconSize={headerIconButtonSize}
                     disabled={props.rightPanelDisplayed === RightPanelType.Share}
@@ -48,7 +45,7 @@ export default function HeaderPanel(props: HeaderPanelProps) {
                     onPress={() => {
                         props.onShowRightPanel(RightPanelType.Share);
                     }}
-                />
+                /> */}
                 <IconButton
                     iconName="setting"
                     iconSize={headerIconButtonSize}

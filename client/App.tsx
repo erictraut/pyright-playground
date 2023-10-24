@@ -13,12 +13,14 @@ import { LspClient } from './LspClient';
 import { MonacoEditor } from './MonacoEditor';
 import { ProblemsPanel } from './ProblemsPanel';
 import { RightPanel, RightPanelType } from './RightPanel';
+import { PlaygroundSettings } from './PlaygroundSettings';
 
 const lspClient = new LspClient();
 
 export interface AppState {
     gotInitialState: boolean;
     code: string;
+    settings: PlaygroundSettings;
     diagnostics: Diagnostic[];
     rightPanelToDisplay: RightPanelType;
 }
@@ -28,8 +30,11 @@ export default function App() {
     const [appState, setAppState] = useState<AppState>({
         gotInitialState: false,
         code: '',
+        settings: {
+            configOverrides: {},
+        },
         diagnostics: [],
-        rightPanelToDisplay: RightPanelType.About,
+        rightPanelToDisplay: RightPanelType.Settings,
     });
 
     useEffect(() => {
@@ -49,6 +54,10 @@ export default function App() {
             });
         }
     }, [appState.gotInitialState]);
+
+    useEffect(() => {
+        setStateToLocalStorage({ code: appState.code, settings: appState.settings });
+    }, [appState.code, appState.settings]);
 
     lspClient.requestNotification({
         onDiagnostics: (diagnostics: Diagnostic[]) => {
@@ -101,8 +110,6 @@ export default function App() {
                             // Tell the LSP client about the code change.
                             lspClient.updateCode(code);
 
-                            setStateToLocalStorage({ code });
-
                             setAppState((prevState) => {
                                 return { ...prevState, code };
                             });
@@ -111,6 +118,12 @@ export default function App() {
                     <RightPanel
                         rightPanelDisplayed={appState.rightPanelToDisplay}
                         onShowRightPanel={onShowRightPanel}
+                        settings={appState.settings}
+                        onUpdateSettings={(settings: PlaygroundSettings) => {
+                            setAppState((prevState) => {
+                                return { ...prevState, settings };
+                            });
+                        }}
                     />
                 </View>
                 <ProblemsPanel
@@ -129,16 +142,11 @@ export default function App() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        flexDirection: 'column',
         alignSelf: 'stretch',
     },
     middlePanelContainer: {
         flex: 1,
         flexDirection: 'row',
         alignSelf: 'stretch',
-    },
-    rightPanelContainer: {
-        position: 'relative',
-        backgroundColor: '#f0f0f0',
     },
 });

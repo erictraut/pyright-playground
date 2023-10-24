@@ -4,9 +4,11 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, ScrollView, StyleSheet, Text, View } from 'react-native';
 import IconButton from './IconButton';
 import { AboutPanel } from './AboutPanel';
+import { SettingsPanel } from './SettingsPanel';
+import { PlaygroundSettings } from './PlaygroundSettings';
 
 export enum RightPanelType {
     None,
@@ -18,21 +20,28 @@ export enum RightPanelType {
 export interface RightPanelProps {
     rightPanelDisplayed: RightPanelType;
     onShowRightPanel: (rightPanelToDisplay: RightPanelType) => void;
+    settings: PlaygroundSettings;
+    onUpdateSettings: (settings: PlaygroundSettings) => void;
 }
 const rightPanelWidth = 350;
 
-export function RightPanel({ rightPanelDisplayed, onShowRightPanel }: RightPanelProps) {
+export function RightPanel(props: RightPanelProps) {
     let panelContents: JSX.Element | undefined;
     let headerTitle = '';
 
-    switch (rightPanelDisplayed) {
+    switch (props.rightPanelDisplayed) {
         case RightPanelType.About:
             panelContents = <AboutPanel />;
             headerTitle = 'Using Pyright Playground';
             break;
 
         case RightPanelType.Settings:
-            panelContents = <View />;
+            panelContents = (
+                <SettingsPanel
+                    settings={props.settings}
+                    onUpdateSettings={props.onUpdateSettings}
+                />
+            );
             headerTitle = 'Playground Settings';
             break;
 
@@ -52,7 +61,7 @@ export function RightPanel({ rightPanelDisplayed, onShowRightPanel }: RightPanel
             useNativeDriver: false,
             easing: Easing.ease,
         }).start();
-    }, [widthAnimation, rightPanelDisplayed]);
+    }, [widthAnimation, props.rightPanelDisplayed]);
 
     return (
         <Animated.View style={[styles.animatedContainer, { width: widthAnimation }]}>
@@ -69,12 +78,12 @@ export function RightPanel({ rightPanelDisplayed, onShowRightPanel }: RightPanel
                             hoverColor={'#000'}
                             title={'Close panel'}
                             onPress={() => {
-                                onShowRightPanel(RightPanelType.None);
+                                props.onShowRightPanel(RightPanelType.None);
                             }}
                         />
                     </View>
                 </View>
-                <View style={styles.contentContainer}>{panelContents}</View>
+                <ScrollView style={styles.contentContainer}>{panelContents}</ScrollView>
             </View>
         </Animated.View>
     );
@@ -82,10 +91,10 @@ export function RightPanel({ rightPanelDisplayed, onShowRightPanel }: RightPanel
 
 const styles = StyleSheet.create({
     animatedContainer: {
+        flexDirection: 'row',
         position: 'relative',
     },
     container: {
-        flex: 1,
         width: rightPanelWidth,
         alignSelf: 'stretch',
         backgroundColor: '#f8f8ff',
