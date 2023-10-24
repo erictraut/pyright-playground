@@ -3,7 +3,31 @@
  * Utility functions for working with local storage.
  */
 
-export function getLocalStorageItem(key: string): string | undefined {
+const localStorageKeyName = 'playgroundState';
+
+export interface LocalStorageState {
+    code: string;
+}
+
+export function getInitialStateFromLocalStorage(): LocalStorageState {
+    const initialStateJson = getLocalStorageItem(localStorageKeyName);
+
+    if (initialStateJson) {
+        try {
+            return JSON.parse(initialStateJson);
+        } catch {
+            // Fall through.
+        }
+    }
+
+    return { code: '' };
+}
+
+export function setStateToLocalStorage(state: LocalStorageState) {
+    setLocalStorageItem(localStorageKeyName, JSON.stringify(state));
+}
+
+function getLocalStorageItem(key: string): string | undefined {
     try {
         return localStorage.getItem(key) ?? undefined;
     } catch {
@@ -11,7 +35,7 @@ export function getLocalStorageItem(key: string): string | undefined {
     }
 }
 
-export function setLocalStorageItem(key: string, value: string | undefined) {
+function setLocalStorageItem(key: string, value: string | undefined) {
     try {
         if (value === undefined) {
             localStorage.removeItem(key);

@@ -9,14 +9,17 @@ import IconButton from './IconButton';
 import { useRef } from 'react';
 import { Menu, MenuRef } from './Menu';
 import TextWithLink from './TextWithLink';
+import { RightPanelType } from './RightPanel';
 
 const headerIconButtonSize = 20;
 
-export default function HeaderPanel() {
+export interface HeaderPanelProps {
+    rightPanelDisplayed: RightPanelType;
+    onShowRightPanel: (rightPanelToDisplay: RightPanelType) => void;
+}
+
+export default function HeaderPanel(props: HeaderPanelProps) {
     const [assets, error] = useAssets([require('./assets/pyright_bw.png')]);
-    const aboutBoxPopup = useRef<MenuRef>(null);
-    const settingsPopup = useRef<MenuRef>(null);
-    const linkPopup = useRef<MenuRef>(null);
 
     let image = null;
     if (!error && assets) {
@@ -36,91 +39,37 @@ export default function HeaderPanel() {
                 Pyright Playground
             </Text>
             <View style={styles.controlsPanel}>
-                {/* <IconButton
+                <IconButton
                     iconName="link"
                     iconSize={headerIconButtonSize}
+                    disabled={props.rightPanelDisplayed === RightPanelType.Share}
                     color={'#fff'}
                     title={'Copy link to clipboard'}
                     onPress={() => {
-                        // TODO - need to implement copy.
-                        linkPopup.current?.open();
+                        props.onShowRightPanel(RightPanelType.Share);
                     }}
-                /> */}
+                />
                 <IconButton
                     iconName="setting"
                     iconSize={headerIconButtonSize}
+                    disabled={props.rightPanelDisplayed === RightPanelType.Settings}
                     color={'#fff'}
                     title={'Playground settings'}
                     onPress={() => {
-                        settingsPopup.current?.open();
+                        props.onShowRightPanel(RightPanelType.Settings);
                     }}
                 />
                 <IconButton
                     iconName="questioncircle"
                     iconSize={headerIconButtonSize}
+                    disabled={props.rightPanelDisplayed === RightPanelType.About}
                     color={'#fff'}
                     title={'About Pyright Playground'}
                     onPress={() => {
-                        aboutBoxPopup.current?.open();
+                        props.onShowRightPanel(RightPanelType.About);
                     }}
                 />
             </View>
-            <Menu ref={aboutBoxPopup} name={'aboutBox'} isPopup={true}>
-                <View style={[styles.popupContainer, styles.aboutBox]}>
-                    <Text style={styles.aboutTextBold} selectable={false}>
-                        {'Welcome to Pyright Playground'}
-                    </Text>
-                    <Text style={styles.aboutText} selectable={false}>
-                        {' '}
-                    </Text>
-                    <Text style={styles.aboutText} selectable={false}>
-                        {
-                            'Type or paste Python code into the text editor, and Pyright will report any errors it finds.'
-                        }
-                    </Text>
-                    <Text style={styles.aboutText} selectable={false}>
-                        {' '}
-                    </Text>
-                    <Text style={styles.aboutText} selectable={false}>
-                        {
-                            'Pyright is an open-source standards-based static type checker for Python.'
-                        }
-                    </Text>
-                    <Text style={styles.aboutText} selectable={false}>
-                        {' '}
-                    </Text>
-                    <TextWithLink
-                        style={styles.aboutTextLink}
-                        url={'https://microsoft.github.io/pyright/#/'}
-                    >
-                        {'Pyright documentation'}
-                    </TextWithLink>
-                    <TextWithLink
-                        style={styles.aboutTextLink}
-                        url={'https://github.com/Microsoft/pyright'}
-                    >
-                        {'Pyright GitHub site'}
-                    </TextWithLink>
-                    <TextWithLink
-                        style={styles.aboutTextLink}
-                        url={'https://github.com/erictraut/pyright-playground'}
-                    >
-                        {'Pyright Playground GitHub site'}
-                    </TextWithLink>
-                </View>
-            </Menu>
-            <Menu ref={settingsPopup} name={'settingsBox'} isPopup={true}>
-                <View style={[styles.popupContainer, styles.settingsBox]}>
-                    <Text style={styles.aboutText}>{'Settings are currently unimplemented.'}</Text>
-                </View>
-            </Menu>
-            <Menu ref={linkPopup} name={'copyLink'} isPopup={true}>
-                <View style={[styles.popupContainer, styles.settingsBox]}>
-                    <Text style={styles.aboutText}>
-                        {'A permalink has been copied to your clipboard.'}
-                    </Text>
-                </View>
-            </Menu>
         </View>
     );
 }
@@ -150,34 +99,5 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'flex-end',
-    },
-    popupContainer: {
-        backgroundColor: 'white',
-        flex: 0,
-        borderRadius: 4,
-        borderWidth: 1,
-        borderStyle: 'solid',
-        borderColor: '#ccc',
-        padding: 16,
-    },
-    aboutBox: {
-        minWidth: 300,
-        maxWidth: 400,
-    },
-    settingsBox: {
-        minWidth: 300,
-        maxWidth: 600,
-    },
-    aboutTextBold: {
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
-    aboutTextLink: {
-        fontSize: 14,
-        color: 'blue',
-        lineHeight: 20,
-    },
-    aboutText: {
-        fontSize: 14,
     },
 });

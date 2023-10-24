@@ -5,15 +5,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { MenuProvider } from 'react-native-popup-menu';
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types';
+import HeaderPanel from './HeaderPanel';
+import { getInitialStateFromLocalStorage, setStateToLocalStorage } from './LocalStorageUtils';
 import { LspClient } from './LspClient';
 import { MonacoEditor } from './MonacoEditor';
-import HeaderPanel from './HeaderPanel';
 import { ProblemsPanel } from './ProblemsPanel';
-import { MenuProvider } from 'react-native-popup-menu';
-import { getLocalStorageItem, setLocalStorageItem } from './LocalStorageUtils';
-
-const localStorageKeyName = 'playgroundState';
+import { RightPanel, RightPanelType } from './RightPanel';
 
 const lspClient = new LspClient();
 
@@ -21,10 +20,7 @@ export interface AppState {
     gotInitialState: boolean;
     code: string;
     diagnostics: Diagnostic[];
-}
-
-interface LocalStorageState {
-    code: string;
+    rightPanelToDisplay: RightPanelType;
 }
 
 export default function App() {
@@ -33,6 +29,7 @@ export default function App() {
         gotInitialState: false,
         code: '',
         diagnostics: [],
+        rightPanelToDisplay: RightPanelType.About,
     });
 
     useEffect(() => {
@@ -81,26 +78,41 @@ export default function App() {
         },
     });
 
+    function onShowRightPanel(rightPanelToDisplay: RightPanelType) {
+        setAppState((prevState) => {
+            return { ...prevState, rightPanelToDisplay };
+        });
+    }
+
     return (
         <MenuProvider>
             <View style={styles.container}>
-                <HeaderPanel />
-                <MonacoEditor
-                    ref={editorRef}
-                    lspClient={lspClient}
-                    code={appState.code}
-                    diagnostics={appState.diagnostics}
-                    onUpdateCode={(code: string) => {
-                        // Tell the LSP client about the code change.
-                        lspClient.updateCode(code);
-
-                        setStateToLocalStorage({ code });
-
-                        setAppState((prevState) => {
-                            return { ...prevState, code };
-                        });
-                    }}
+                <HeaderPanel
+                    rightPanelDisplayed={appState.rightPanelToDisplay}
+                    onShowRightPanel={onShowRightPanel}
                 />
+                <View style={styles.middlePanelContainer}>
+                    <MonacoEditor
+                        ref={editorRef}
+                        lspClient={lspClient}
+                        code={appState.code}
+                        diagnostics={appState.diagnostics}
+                        onUpdateCode={(code: string) => {
+                            // Tell the LSP client about the code change.
+                            lspClient.updateCode(code);
+
+                            setStateToLocalStorage({ code });
+
+                            setAppState((prevState) => {
+                                return { ...prevState, code };
+                            });
+                        }}
+                    />
+                    <RightPanel
+                        rightPanelDisplayed={appState.rightPanelToDisplay}
+                        onShowRightPanel={onShowRightPanel}
+                    />
+                </View>
                 <ProblemsPanel
                     diagnostics={appState.diagnostics}
                     onSelectRange={(range) => {
@@ -114,28 +126,19 @@ export default function App() {
     );
 }
 
-function getInitialStateFromLocalStorage(): LocalStorageState {
-    const initialStateJson = getLocalStorageItem(localStorageKeyName);
-
-    if (initialStateJson) {
-        try {
-            return JSON.parse(initialStateJson);
-        } catch {
-            // Fall through.
-        }
-    }
-
-    return { code: '' };
-}
-
-function setStateToLocalStorage(state: LocalStorageState) {
-    setLocalStorageItem(localStorageKeyName, JSON.stringify(state));
-}
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
         alignSelf: 'stretch',
+    },
+    middlePanelContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        alignSelf: 'stretch',
+    },
+    rightPanelContainer: {
+        position: 'relative',
+        backgroundColor: '#f0f0f0',
     },
 });
