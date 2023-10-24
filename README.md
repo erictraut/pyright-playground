@@ -8,6 +8,6 @@
 
 Do you have questions about Pyright Playground? Post your questions in [the discussion section](https://github.com/erictraut/pyright-playground/discussions).
 
-If you would like to report a bug or request an enhancement, file a new issue in the [pyright-playground issue tracker](https://github.com/erictraut/pyright-playground/issues).
+To report a bug or request an enhancement for Pyright Playground, file a new issue in the [pyright-playground issue tracker](https://github.com/erictraut/pyright-playground/issues).
 
-To report a bug or request an enhancement for pyright, file a new issue in the [pyright issue tracker](https://github.com/microsoft/pyright/issues).
+To report a bug or request an enhancement for Pyright, file a new issue in the [pyright issue tracker](https://github.com/microsoft/pyright/issues).

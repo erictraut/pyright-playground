@@ -6,8 +6,9 @@
 import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAssets } from 'expo-asset';
 import IconButton from './IconButton';
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { Menu, MenuRef } from './Menu';
+import TextWithLink from './TextWithLink';
 
 const headerIconButtonSize = 20;
 
@@ -15,6 +16,7 @@ export default function HeaderPanel() {
     const [assets, error] = useAssets([require('./assets/pyright_bw.png')]);
     const aboutBoxPopup = useRef<MenuRef>(null);
     const settingsPopup = useRef<MenuRef>(null);
+    const linkPopup = useRef<MenuRef>(null);
 
     let image = null;
     if (!error && assets) {
@@ -34,6 +36,16 @@ export default function HeaderPanel() {
                 Pyright Playground
             </Text>
             <View style={styles.controlsPanel}>
+                {/* <IconButton
+                    iconName="link"
+                    iconSize={headerIconButtonSize}
+                    color={'#fff'}
+                    title={'Copy link to clipboard'}
+                    onPress={() => {
+                        // TODO - need to implement copy.
+                        linkPopup.current?.open();
+                    }}
+                /> */}
                 <IconButton
                     iconName="setting"
                     iconSize={headerIconButtonSize}
@@ -41,15 +53,6 @@ export default function HeaderPanel() {
                     title={'Playground settings'}
                     onPress={() => {
                         settingsPopup.current?.open();
-                    }}
-                />
-                <IconButton
-                    iconName="github"
-                    iconSize={headerIconButtonSize}
-                    color={'#fff'}
-                    title={'Go to GitHub repository'}
-                    onPress={() => {
-                        Linking.openURL('https://github.com/erictraut/pyright-playground');
                     }}
                 />
                 <IconButton
@@ -64,15 +67,58 @@ export default function HeaderPanel() {
             </View>
             <Menu ref={aboutBoxPopup} name={'aboutBox'} isPopup={true}>
                 <View style={[styles.popupContainer, styles.aboutBox]}>
-                    <Text style={styles.aboutText}>
-                        {'Type or paste Python code into the text editor, and Pyright (a static ' +
-                            'type checker for Python) will report any errors it finds.'}
+                    <Text style={styles.aboutTextBold} selectable={false}>
+                        {'Welcome to Pyright Playground'}
                     </Text>
+                    <Text style={styles.aboutText} selectable={false}>
+                        {' '}
+                    </Text>
+                    <Text style={styles.aboutText} selectable={false}>
+                        {
+                            'Type or paste Python code into the text editor, and Pyright will report any errors it finds.'
+                        }
+                    </Text>
+                    <Text style={styles.aboutText} selectable={false}>
+                        {' '}
+                    </Text>
+                    <Text style={styles.aboutText} selectable={false}>
+                        {
+                            'Pyright is an open-source standards-based static type checker for Python.'
+                        }
+                    </Text>
+                    <Text style={styles.aboutText} selectable={false}>
+                        {' '}
+                    </Text>
+                    <TextWithLink
+                        style={styles.aboutTextLink}
+                        url={'https://microsoft.github.io/pyright/#/'}
+                    >
+                        {'Pyright documentation'}
+                    </TextWithLink>
+                    <TextWithLink
+                        style={styles.aboutTextLink}
+                        url={'https://github.com/Microsoft/pyright'}
+                    >
+                        {'Pyright GitHub site'}
+                    </TextWithLink>
+                    <TextWithLink
+                        style={styles.aboutTextLink}
+                        url={'https://github.com/erictraut/pyright-playground'}
+                    >
+                        {'Pyright Playground GitHub site'}
+                    </TextWithLink>
                 </View>
             </Menu>
             <Menu ref={settingsPopup} name={'settingsBox'} isPopup={true}>
                 <View style={[styles.popupContainer, styles.settingsBox]}>
                     <Text style={styles.aboutText}>{'Settings are currently unimplemented.'}</Text>
+                </View>
+            </Menu>
+            <Menu ref={linkPopup} name={'copyLink'} isPopup={true}>
+                <View style={[styles.popupContainer, styles.settingsBox]}>
+                    <Text style={styles.aboutText}>
+                        {'A permalink has been copied to your clipboard.'}
+                    </Text>
                 </View>
             </Menu>
         </View>
@@ -112,7 +158,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderStyle: 'solid',
         borderColor: '#ccc',
-        padding: 8,
+        padding: 16,
     },
     aboutBox: {
         minWidth: 300,
@@ -125,6 +171,11 @@ const styles = StyleSheet.create({
     aboutTextBold: {
         fontSize: 14,
         fontWeight: 'bold',
+    },
+    aboutTextLink: {
+        fontSize: 14,
+        color: 'blue',
+        lineHeight: 20,
     },
     aboutText: {
         fontSize: 14,

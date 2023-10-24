@@ -67,9 +67,18 @@ function ProblemItem(props: { diagnostic: Diagnostic; onSelectRange: (range: Ran
             <View style={styles.diagnosticIconContainer}>
                 <ProblemIcon severity={props.diagnostic.severity} />
             </View>
-            <View style={styles.diagnosticTextContainer}>
-                <Text style={styles.diagnosticText}>{props.diagnostic.message}</Text>
-            </View>
+            <div title={props.diagnostic.message}>
+                <View style={styles.diagnosticTextContainer}>
+                    <Text style={styles.diagnosticText}>
+                        <Text>{props.diagnostic.message}</Text>
+                        {props.diagnostic.code ? (
+                            <Text
+                                style={styles.diagnosticSourceText}
+                            >{`  (${props.diagnostic.code})`}</Text>
+                        ) : undefined}
+                    </Text>
+                </View>
+            </div>
         </Pressable>
     );
 }
@@ -145,5 +154,9 @@ const styles = StyleSheet.create({
     diagnosticTextContainer: {},
     diagnosticText: {
         fontSize: 12,
+        lineHeight: 16,
+    },
+    diagnosticSourceText: {
+        color: '#aaa',
     },
 });
