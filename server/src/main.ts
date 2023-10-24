@@ -6,8 +6,6 @@
 import bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
 import express from 'express';
-import * as http from 'http';
-import * as https from 'https';
 import * as path from 'path';
 import routes from './routes';
 
@@ -35,10 +33,7 @@ function startService() {
         res.sendFile('dist/webapp/index.html', { root });
     });
 
-    const server = process.env.USE_UNSECURE_WEB_SOCKET
-        ? http.createServer(app)
-        : https.createServer(app);
-    server.listen(apiPort, () => {
+    app.listen(apiPort, () => {
         console.log(`API running on port ${apiPort}`);
     });
 }
