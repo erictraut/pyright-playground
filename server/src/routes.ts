@@ -11,9 +11,12 @@ const router = express.Router();
 export default router;
 
 // Configure CORS middleware.
-// TODO - need to add proper configuration for CORS
 const corsOptions: CorsOptions = {
-    origin: '*',
+    origin: [
+        /http:\/\/localhost\:*/,
+        'https://pyright-playground.azurewebsites.net',
+        'https://pyright-play.net',
+    ],
 };
 
 router.use(cors(corsOptions));
