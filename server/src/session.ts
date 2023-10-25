@@ -12,13 +12,19 @@ export type SessionId = string;
 
 export interface SessionOptions {
     pythonVersion?: string;
+    pythonPlatform?: string;
     pyrightVersion?: string;
+    typeCheckingMode?: string;
+    configOverrides?: { [name: string]: boolean };
     locale?: string;
 }
 
 export interface Session {
     // A unique ID for this session.
     readonly id: SessionId;
+
+    // Path to temp directory that contains the "project" for this session.
+    tempDirPath: string;
 
     // Child process running the language server for this session.
     langServerProcess?: ChildProcess;

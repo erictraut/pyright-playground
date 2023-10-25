@@ -6,6 +6,7 @@
 
 import * as fs from 'fs';
 import { exec, fork } from 'node:child_process';
+import * as os from 'os';
 import packageJson from 'package-json';
 import * as path from 'path';
 import { v4 as uuid } from 'uuid';
@@ -67,6 +68,13 @@ export function closeSession(sessionId: SessionId) {
 
     session.langServerProcess = undefined;
     activeSessions.delete(sessionId);
+
+    // Dispose of the temporary directory.
+    try {
+        fs.rmSync(session.tempDirPath, { recursive: true });
+    } catch (e) {
+        // Ignore error.
+    }
 }
 
 export async function getPyrightVersions(): Promise<string[]> {
@@ -106,17 +114,24 @@ export async function getPyrightLatestVersion(): Promise<string> {
 }
 
 export function startSession(
-    localDirectory: string,
+    binaryDirPath: string,
     sessionOptions?: SessionOptions
 ): Promise<SessionId> {
     return new Promise<SessionId>((resolve, reject) => {
         // Launch a new instance of the language server in another process.
-        console.log(`Spawning new pyright language server from ${localDirectory}`);
+        console.log(`Spawning new pyright language server from ${binaryDirPath}`);
         const binaryPath = path.join(
             process.cwd(),
-            localDirectory,
+            binaryDirPath,
             './node_modules/pyright/langserver.index.js'
         );
+
+        // Create a temp directory where we can store a synthesized config file.
+        const tempDirPath = fs.mkdtempSync(path.join(os.tmpdir(), 'pyright_playground'));
+
+        // Synthesize a "pyrightconfig.json" file from the session options and write
+        // it to the temp directory so the language server can find it.
+        synthesizePyrightConfigFile(tempDirPath, sessionOptions);
 
         // Set the environment variable for the locale. Older versions
         // of pyright don't handle the local passed via the LSP initialize
@@ -130,7 +145,7 @@ export function startSession(
             binaryPath,
             ['--node-ipc', `--clientProcessId=${process.pid.toString()}`],
             {
-                cwd: process.cwd(),
+                cwd: tempDirPath,
                 silent: true,
                 env,
             }
@@ -143,6 +158,7 @@ export function startSession(
         const session: Session = {
             id: sessionId,
             lastAccessTime: Date.now(),
+            tempDirPath,
         };
 
         // Start tracking the session.
@@ -154,7 +170,7 @@ export function startSession(
             session.langClient = new LspClient(langServerProcess);
 
             session.langClient
-                .initialize(sessionOptions)
+                .initialize(tempDirPath, sessionOptions)
                 .then(() => {
                     resolve(sessionId);
                 })
@@ -223,6 +239,33 @@ async function installPyright(requestedVersion: string | undefined): Promise<Ins
             }
         );
     });
+}
+
+function synthesizePyrightConfigFile(tempDirPath: string, sessionOptions?: SessionOptions) {
+    const configFilePath = path.join(tempDirPath, 'pyrightconfig.json');
+    const config: any = {};
+
+    if (sessionOptions?.pythonVersion) {
+        config.pythonVersion = sessionOptions.pythonVersion;
+    }
+
+    if (sessionOptions?.pythonPlatform) {
+        config.pythonPlatform = sessionOptions.pythonPlatform;
+    }
+
+    if (sessionOptions?.typeCheckingMode === 'strict') {
+        config.typeCheckingMode = 'strict';
+    }
+
+    if (sessionOptions?.configOverrides) {
+        Object.keys(sessionOptions.configOverrides).forEach((key) => {
+            config[key] = sessionOptions.configOverrides![key];
+        });
+    }
+
+    const configJson = JSON.stringify(config);
+    console.log(`Writing config to path ${configFilePath}: ${configJson}`);
+    fs.writeFileSync(configFilePath, configJson);
 }
 
 // If there is no session lifetime timer, schedule one.

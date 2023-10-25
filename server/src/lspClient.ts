@@ -56,12 +56,12 @@ export class LspClient {
         this._connection.listen();
     }
 
-    public async initialize(sessionOptions?: SessionOptions) {
+    public async initialize(projectPath: string, sessionOptions?: SessionOptions) {
         // Initialize the server.
         console.log('Sending initialization request to language server');
         const init: InitializeParams = {
-            rootUri: 'file:///tmp',
-            rootPath: '/tmp',
+            rootUri: `file://${projectPath}`,
+            rootPath: projectPath,
             processId: 1,
             capabilities: {
                 textDocument: {

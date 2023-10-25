@@ -125,6 +125,14 @@ function validateSessionOptions(req: Request, res: Response): SessionOptions | u
         }
     }
 
+    const pythonPlatform = req.body.pythonPlatform;
+    if (pythonPlatform !== undefined) {
+        if (typeof pythonPlatform !== 'string') {
+            res.status(400).json({ message: 'Invalid pythonPlatform' });
+            return undefined;
+        }
+    }
+
     const locale = req.body.locale;
     if (locale !== undefined) {
         if (typeof locale !== 'string') {
@@ -133,9 +141,40 @@ function validateSessionOptions(req: Request, res: Response): SessionOptions | u
         }
     }
 
-    // TODO - validate other options
+    const typeCheckingMode = req.body.typeCheckingMode;
+    if (typeCheckingMode !== undefined) {
+        if (typeCheckingMode !== 'strict') {
+            res.status(400).json({ message: 'Invalid typeCheckingMode' });
+            return undefined;
+        }
+    }
 
-    return { pyrightVersion, pythonVersion, locale };
+    const configOverrides: { [name: string]: boolean } = {};
+    if (req.body.configOverrides !== undefined) {
+        if (typeof req.body.configOverrides !== 'object') {
+            res.status(400).json({ message: 'Invalid configOverrides' });
+            return undefined;
+        }
+
+        for (const key of Object.keys(req.body.configOverrides)) {
+            const value = req.body.configOverrides[key];
+            if (typeof value !== 'boolean') {
+                res.status(400).json({ message: `Invalid value for configOverrides key ${key}` });
+                return undefined;
+            }
+
+            configOverrides[key] = value;
+        }
+    }
+
+    return {
+        pyrightVersion,
+        pythonVersion,
+        pythonPlatform,
+        typeCheckingMode,
+        configOverrides,
+        locale,
+    };
 }
 
 function validateCodeWithOptions(

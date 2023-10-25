@@ -133,15 +133,22 @@ export class LspSession {
         }
 
         const sessionOptions: any = {};
-        if (this._settings?.pyrightVersion) {
-            sessionOptions.pyrightVersion = this._settings.pyrightVersion;
-        }
+        if (this._settings) {
+            if (this._settings.pyrightVersion) {
+                sessionOptions.pyrightVersion = this._settings.pyrightVersion;
+            }
 
-        if (this._settings?.pythonVersion) {
-            sessionOptions.pythonVersion = this._settings.pythonVersion;
-        }
+            if (this._settings.pythonVersion) {
+                sessionOptions.pythonVersion = this._settings.pythonVersion;
+            }
 
-        sessionOptions.locale = this._settings.locale ?? navigator.language;
+            if (this._settings.strictMode) {
+                sessionOptions.typeCheckingMode = 'strict';
+            }
+
+            sessionOptions.configOverrides = { ...this._settings.configOverrides };
+            sessionOptions.locale = this._settings.locale ?? navigator.language;
+        }
 
         const endpoint = appServerApiAddressPrefix + `session`;
         const sessionId = await endpointPost(endpoint, {}, JSON.stringify(sessionOptions)).then(
