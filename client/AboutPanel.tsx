@@ -20,6 +20,12 @@ export function AboutPanel() {
             <Text style={styles.aboutText} selectable={false}>
                 {' '}
             </Text>
+            <Text style={styles.aboutText} selectable={false}>
+                {'Copy the URL from your browser to share the playground with others.'}
+            </Text>
+            <Text style={styles.aboutText} selectable={false}>
+                {' '}
+            </Text>
             <TextWithLink
                 style={styles.aboutTextLink}
                 url={'https://github.com/erictraut/pyright-playground'}

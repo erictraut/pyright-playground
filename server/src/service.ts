@@ -103,6 +103,31 @@ export function getHoverInfo(req: Request, res: Response) {
         });
 }
 
+// Given some Python code and a position within that code,
+// returns signature help information.
+export function getSignatureHelp(req: Request, res: Response) {
+    const session = validateSession(req, res);
+    const langClient = session?.langClient;
+    if (!langClient) {
+        return;
+    }
+
+    const codeWithOptions = validateCodeWithOptions(req, res, ['position']);
+    if (!codeWithOptions) {
+        return;
+    }
+
+    langClient
+        .getSignatureHelp(codeWithOptions.code, codeWithOptions.position!)
+        .then((signatureHelp) => {
+            res.status(200).json({ signatureHelp });
+        })
+        .catch((err) => {
+            console.error(`getHoverInfo returning a 500: ${err}`);
+            res.status(500).json({ message: err || 'An unexpected error occurred' });
+        });
+}
+
 function validateSessionOptions(req: Request, res: Response): SessionOptions | undefined {
     if (!req.body || typeof req.body !== 'object') {
         res.status(400).json({ message: 'Invalid request body' });

@@ -4,7 +4,7 @@
  * talks to the remote language server via an LSP session.
  */
 
-import { Diagnostic, Position } from 'vscode-languageserver-types';
+import { Diagnostic, Position, SignatureHelp, WorkspaceEdit } from 'vscode-languageserver-types';
 import { HoverInfo, LspSession } from './LspSession';
 import { PlaygroundSettings } from './PlaygroundSettings';
 
@@ -44,6 +44,13 @@ export class LspClient {
 
     async getHoverForPosition(code: string, position: Position): Promise<HoverInfo | undefined> {
         return this._lspSession.getHoverForPosition(code, position);
+    }
+
+    async getSignatureHelpForPosition(
+        code: string,
+        position: Position
+    ): Promise<SignatureHelp | undefined> {
+        return this._lspSession.getSignatureHelpForPosition(code, position);
     }
 
     private _restartDiagnosticsTimer() {

@@ -10,7 +10,7 @@ export interface LocalInfo {
 
 export const supportedLocales: LocalInfo[] = [
     {
-        displayName: 'Default',
+        displayName: 'Browser Default',
         code: '',
     },
     {

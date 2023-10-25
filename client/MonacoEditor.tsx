@@ -17,6 +17,10 @@ loader
         monaco.languages.registerHoverProvider('python', {
             provideHover: handleHoverRequest,
         });
+        monaco.languages.registerSignatureHelpProvider('python', {
+            provideSignatureHelp: handleSignatureHelpRequest,
+            signatureHelpTriggerCharacters: ['(', ','],
+        });
     })
     .catch((error) => console.error('An error occurred during initialization of Monaco: ', error));
 
@@ -193,6 +197,41 @@ async function handleHoverRequest(
                 },
             ],
             range: convertRange(hoverInfo.range),
+        };
+    } catch (err) {
+        return null;
+    }
+}
+
+async function handleSignatureHelpRequest(
+    model: monaco.editor.ITextModel,
+    position: monaco.Position
+): Promise<monaco.languages.SignatureHelpResult> {
+    const lspClient = getLspClientForModel(model);
+    if (!lspClient) {
+        return null;
+    }
+
+    try {
+        const sigInfo = await lspClient.getSignatureHelpForPosition(model.getValue(), {
+            line: position.lineNumber - 1,
+            character: position.column - 1,
+        });
+
+        return {
+            value: {
+                signatures: sigInfo.signatures.map((sig) => {
+                    return {
+                        label: sig.label,
+                        documentation: sig.documentation,
+                        parameters: sig.parameters,
+                        activeParameter: sig.activeParameter,
+                    };
+                }),
+                activeSignature: sigInfo.activeSignature,
+                activeParameter: sigInfo.activeParameter,
+            },
+            dispose: () => {},
         };
     } catch (err) {
         return null;

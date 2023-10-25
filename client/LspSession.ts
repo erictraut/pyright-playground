@@ -3,7 +3,7 @@
  * Handles the state associated with a remote language server session.
  */
 
-import { Diagnostic, Position, Range } from 'vscode-languageserver-types';
+import { Diagnostic, Position, Range, SignatureHelp } from 'vscode-languageserver-types';
 import { endpointDelete, endpointGet, endpointPost } from './EndpointUtils';
 import { PlaygroundSettings } from './PlaygroundSettings';
 
@@ -85,6 +85,26 @@ export class LspSession {
                         throw data;
                     }
                     return data.hover;
+                })
+                .catch((err) => {
+                    throw err;
+                });
+        });
+    }
+
+    async getSignatureHelpForPosition(
+        code: string,
+        position: Position
+    ): Promise<SignatureHelp | undefined> {
+        return this._doWithSession<SignatureHelp>(async (sessionId) => {
+            const endpoint = appServerApiAddressPrefix + `session/${sessionId}/signature`;
+            return endpointPost(endpoint, {}, JSON.stringify({ code, position }))
+                .then(async (response) => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw data;
+                    }
+                    return data.signatureHelp;
                 })
                 .catch((err) => {
                     throw err;

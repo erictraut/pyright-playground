@@ -212,10 +212,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
             </View>
 
             <SettingsDivider />
-            <SettingsHeader headerText={'LOCALE'} />
+            <SettingsHeader headerText={'LANGUAGE'} />
             <View style={styles.selectionContainer}>
                 <Text style={styles.selectedOptionText} selectable={false}>
-                    {getLocaleDisplayName(props.settings.locale) || 'Default'}
+                    {getLocaleDisplayName(props.settings.locale) || 'Browser Default'}
                 </Text>
                 <IconButton
                     iconName="downcircleo"

@@ -28,6 +28,9 @@ import {
     LogMessageParams,
     Position,
     PublishDiagnosticsParams,
+    SignatureHelp,
+    SignatureHelpParams,
+    SignatureHelpRequest,
 } from 'vscode-languageserver';
 import { SessionOptions } from './session';
 
@@ -74,6 +77,7 @@ export class LspClient {
                     hover: {
                         contentFormat: ['markdown', 'plaintext'],
                     },
+                    signatureHelp: {},
                 },
             },
         };
@@ -195,7 +199,7 @@ export class LspClient {
             documentVersion = await this.updateTextDocument(code);
         }
 
-        const hoverParams: HoverParams = {
+        const params: HoverParams = {
             textDocument: {
                 uri: documentUri,
             },
@@ -203,9 +207,32 @@ export class LspClient {
         };
 
         const result = await this._connection
-            .sendRequest(HoverRequest.type, hoverParams)
+            .sendRequest(HoverRequest.type, params)
             .catch((err) => {
-                // Don't return an error. Just return null (no hover info).
+                // Don't return an error. Just return null (no info).
+                return null;
+            });
+
+        return result;
+    }
+
+    async getSignatureHelp(code: string, position: Position): Promise<SignatureHelp | null> {
+        let documentVersion = this._documentVersion;
+        if (this._documentText !== code) {
+            documentVersion = await this.updateTextDocument(code);
+        }
+
+        const params: SignatureHelpParams = {
+            textDocument: {
+                uri: documentUri,
+            },
+            position,
+        };
+
+        const result = await this._connection
+            .sendRequest(SignatureHelpRequest.type, params)
+            .catch((err) => {
+                // Don't return an error. Just return null (no info).
                 return null;
             });
 
