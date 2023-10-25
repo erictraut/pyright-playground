@@ -3,8 +3,8 @@
  * Utility routines for reading and updating the URL in the browser.
  */
 
-import { PlaygroundSettings, PlaygroundState } from './PlaygroundSettings';
 import * as lzString from 'lz-string';
+import { PlaygroundState } from './PlaygroundSettings';
 import { configSettingsMap } from './PyrightConfigSettings';
 
 export function updateUrlFromState(state: PlaygroundState) {
@@ -16,35 +16,37 @@ export function updateUrlFromState(state: PlaygroundState) {
         url.searchParams.delete(key);
     });
 
-    if (settings.pyrightVersion) {
-        url.searchParams.set('pyrightVersion', settings.pyrightVersion);
-    }
+    if (settings) {
+        if (settings.pyrightVersion) {
+            url.searchParams.set('pyrightVersion', settings.pyrightVersion);
+        }
 
-    if (settings.pythonVersion) {
-        url.searchParams.set('pythonVersion', settings.pythonVersion);
-    }
+        if (settings.pythonVersion) {
+            url.searchParams.set('pythonVersion', settings.pythonVersion);
+        }
 
-    if (settings.pythonPlatform) {
-        url.searchParams.set('pythonPlatform', settings.pythonPlatform);
-    }
+        if (settings.pythonPlatform) {
+            url.searchParams.set('pythonPlatform', settings.pythonPlatform);
+        }
 
-    if (settings.strictMode) {
-        url.searchParams.set('strict', 'true');
-    }
+        if (settings.strictMode) {
+            url.searchParams.set('strict', 'true');
+        }
 
-    if (settings.locale) {
-        url.searchParams.set('locale', settings.locale);
-    }
+        if (settings.locale) {
+            url.searchParams.set('locale', settings.locale);
+        }
 
-    Object.keys(settings.configOverrides).forEach((key) => {
-        const value = settings.configOverrides[key];
-        url.searchParams.set(key, value.toString());
-    });
+        Object.keys(settings.configOverrides).forEach((key) => {
+            const value = settings.configOverrides[key];
+            url.searchParams.set(key, value.toString());
+        });
 
-    if (code) {
-        // Use compression for the code.
-        const encodedCode = lzString.compressToEncodedURIComponent(code);
-        url.searchParams.set('code', encodedCode);
+        if (code) {
+            // Use compression for the code.
+            const encodedCode = lzString.compressToEncodedURIComponent(code);
+            url.searchParams.set('code', encodedCode);
+        }
     }
 
     history.replaceState(null, null, url.toString());
