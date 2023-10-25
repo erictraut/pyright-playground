@@ -15,6 +15,7 @@ import { MonacoEditor } from './MonacoEditor';
 import { PlaygroundSettings } from './PlaygroundSettings';
 import { ProblemsPanel } from './ProblemsPanel';
 import { RightPanel, RightPanelType } from './RightPanel';
+import { getStateFromUrl, updateUrlFromState } from './UrlUtils';
 
 const lspClient = new LspClient();
 
@@ -48,7 +49,7 @@ export default function App() {
 
     useEffect(() => {
         if (!appState.gotInitialState) {
-            const initialState = getInitialStateFromLocalStorage();
+            const initialState = getStateFromUrl() ?? getInitialStateFromLocalStorage();
 
             if (initialState.code !== '') {
                 lspClient.updateCode(initialState.code);
@@ -97,6 +98,7 @@ export default function App() {
 
     useEffect(() => {
         setStateToLocalStorage({ code: appState.code, settings: appState.settings });
+        updateUrlFromState(appState);
     }, [appState.code, appState.settings]);
 
     useEffect(() => {

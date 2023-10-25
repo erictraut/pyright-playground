@@ -3,16 +3,11 @@
  * Utility functions for working with local storage.
  */
 
-import { PlaygroundSettings } from './PlaygroundSettings';
+import { PlaygroundState } from './PlaygroundSettings';
 
 const localStorageKeyName = 'playgroundState';
 
-export interface LocalStorageState {
-    code: string;
-    settings: PlaygroundSettings;
-}
-
-export function getInitialStateFromLocalStorage(): LocalStorageState {
+export function getInitialStateFromLocalStorage(): PlaygroundState {
     const initialStateJson = getLocalStorageItem(localStorageKeyName);
 
     if (initialStateJson) {
@@ -26,7 +21,7 @@ export function getInitialStateFromLocalStorage(): LocalStorageState {
     return { code: '', settings: { configOverrides: {} } };
 }
 
-export function setStateToLocalStorage(state: LocalStorageState) {
+export function setStateToLocalStorage(state: PlaygroundState) {
     setLocalStorageItem(localStorageKeyName, JSON.stringify(state));
 }
 

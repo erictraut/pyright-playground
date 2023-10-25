@@ -476,3 +476,8 @@ export const configSettings: PyrightConfigSetting[] = [
 export const configSettingsAlphabetized = configSettings.sort((a, b) => {
     return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
 });
+
+export const configSettingsMap = new Map<string, PyrightConfigSetting>();
+configSettings.forEach((setting) => {
+    configSettingsMap.set(setting.name, setting);
+});

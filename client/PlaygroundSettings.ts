@@ -11,3 +11,8 @@ export interface PlaygroundSettings {
     pythonPlatform?: string;
     locale?: string;
 }
+
+export interface PlaygroundState {
+    code: string;
+    settings: PlaygroundSettings;
+}
