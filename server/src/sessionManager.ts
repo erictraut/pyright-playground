@@ -10,7 +10,7 @@ import packageJson from 'package-json';
 import * as path from 'path';
 import { v4 as uuid } from 'uuid';
 import { LspClient } from './lspClient';
-import { Session, SessionId } from './session';
+import { Session, SessionId, SessionOptions } from './session';
 
 export interface InstallPyrightInfo {
     pyrightVersion: string;
@@ -40,17 +40,21 @@ export function getSessionById(id: SessionId) {
 }
 
 // Allocate a new session and return its ID.
-export async function createNewSession(pyrightVersion: string | undefined): Promise<SessionId> {
+export async function createNewSession(
+    sessionOptions: SessionOptions | undefined
+): Promise<SessionId> {
     scheduleSessionLifetimeTimer();
 
-    return installPyright(pyrightVersion).then((info) => {
-        return startSession(info.localDirectory);
+    return installPyright(sessionOptions?.pyrightVersion).then((info) => {
+        return startSession(info.localDirectory, sessionOptions);
     });
 }
 
 export function closeSession(sessionId: SessionId) {
     const session = activeSessions.get(sessionId);
     if (session) {
+        console.log(`Request to close session ${sessionId}`);
+
         // If the process exists, attempt to kill it.
         if (session.langServerProcess) {
             session.langServerProcess.kill();
@@ -97,7 +101,10 @@ export async function getPyrightLatestVersion(): Promise<string> {
         });
 }
 
-export function startSession(localDirectory: string): Promise<SessionId> {
+export function startSession(
+    localDirectory: string,
+    sessionOptions?: SessionOptions
+): Promise<SessionId> {
     return new Promise<SessionId>((resolve, reject) => {
         // Launch a new instance of the language server in another process.
         console.log(`Spawning new pyright language server from ${localDirectory}`);
@@ -107,12 +114,21 @@ export function startSession(localDirectory: string): Promise<SessionId> {
             './node_modules/pyright/langserver.index.js'
         );
 
+        // Set the environment variable for the locale. Older versions
+        // of pyright don't handle the local passed via the LSP initialize
+        // request.
+        const env = { ...process.env };
+        if (sessionOptions?.locale) {
+            env.LC_ALL = sessionOptions.locale;
+        }
+
         const langServerProcess = fork(
             binaryPath,
             ['--node-ipc', `--clientProcessId=${process.pid.toString()}`],
             {
                 cwd: process.cwd(),
                 silent: true,
+                env,
             }
         );
 
@@ -134,7 +150,7 @@ export function startSession(localDirectory: string): Promise<SessionId> {
             session.langClient = new LspClient(langServerProcess);
 
             session.langClient
-                .initialize()
+                .initialize(sessionOptions)
                 .then(() => {
                     resolve(sessionId);
                 })

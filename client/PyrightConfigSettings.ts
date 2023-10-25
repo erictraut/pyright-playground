@@ -12,6 +12,24 @@ export interface PyrightConfigSetting {
 
 export const configSettings: PyrightConfigSetting[] = [
     {
+        name: 'analyzeUnannotatedFunctions',
+        description: 'Analyze and report diagnostics for functions that have no annotations',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'strictParameterNoneValue',
+        description: 'Allow implicit Optional when default parameter value is None',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'enableTypeIgnoreComments',
+        description: 'Allow "# type: ignore" comments',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
         name: 'disableBytesTypePromotions',
         description: 'Do not treat bytearray and memoryview as implicit subtypes of bytes',
         isEnabledInBasic: false,
@@ -33,6 +51,146 @@ export const configSettings: PyrightConfigSetting[] = [
         name: 'strictSetInference',
         description: 'Infer strict types for set expressions',
         isEnabledInBasic: false,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportMissingModuleSource',
+        description: 'Controls reporting of imports that cannot be resolved to source files',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportMissingImports',
+        description: 'Controls reporting of imports that cannot be resolved',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportUndefinedVariable',
+        description: 'Controls reporting of attempts to use an undefined variable',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportAssertAlwaysTrue',
+        description: 'Controls reporting assert expressions that will always evaluate to true',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportInvalidStringEscapeSequence',
+        description: 'Controls reporting of invalid escape sequences used within string literals',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportInvalidTypeVarUse',
+        description: 'Controls reporting improper use of type variables within function signatures',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportMissingTypeStubs',
+        description: 'Controls reporting of imports that cannot be resolved to type stub files',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportSelfClsParameterName',
+        description: 'Controls reporting assert expressions that will always evaluate to true',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportUnsupportedDunderAll',
+        description: 'Controls reporting of unsupported operations performed on __all__',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportUnusedExpression',
+        description: 'Controls reporting of simple expressions whose value is not used in any way',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportWildcardImportFromLibrary',
+        description: 'Controls reporting of wlidcard import from external library',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportGeneralTypeIssues',
+        description: 'Controls reporting of general type issues',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportOptionalSubscript',
+        description:
+            'Controls reporting of attempts to subscript (index) a variable with Optional type',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportOptionalMemberAccess',
+        description:
+            'Controls reporting of attempts to access a member of a variable with Optional type',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportOptionalCall',
+        description: 'Controls reporting of attempts to call a variable with Optional type',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportOptionalIterable',
+        description: 'Controls reporting of attempts to use an Optional type as an iterable value',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportOptionalContextManager',
+        description:
+            'Controls reporting of attempts to use an Optional type as a parameter to a with statement',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportOptionalOperand',
+        description:
+            'Controls reporting of attempts to use an Optional type as an operand for a binary or unary operator',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportTypedDictNotRequiredAccess',
+        description:
+            'Controls reporting of attempts to access a non-required key in a TypedDict without a check for its presence',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportPrivateImportUsage',
+        description:
+            'Controls reporting of improper usage of symbol imported from a "py.typed" module that is not re-exported from that module',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportUnboundVariable',
+        description:
+            'Controls reporting of attempts to use an unbound or possibly unbound variable',
+        isEnabledInBasic: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportUnusedCoroutine',
+        description:
+            'Controls reporting of call expressions that returns Coroutine whose results are not consumed',
+        isEnabledInBasic: true,
         isEnabledInStrict: true,
     },
     {
@@ -204,7 +362,7 @@ export const configSettings: PyrightConfigSetting[] = [
     },
     {
         name: 'reportUnusedFunction',
-        description: '',
+        description: 'Controls reporting of private functions or methods that are not accessed',
         isEnabledInBasic: false,
         isEnabledInStrict: true,
     },

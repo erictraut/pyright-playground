@@ -5,13 +5,8 @@
 
 import { Request, Response } from 'express';
 import * as SessionManager from './sessionManager';
-import { Session } from './session';
+import { Session, SessionOptions } from './session';
 import { Position } from 'vscode-languageserver';
-
-interface SessionOptions {
-    pythonVersion?: string;
-    pyrightVersion?: string;
-}
 
 interface CodeWithOptions {
     code: string;
@@ -32,12 +27,12 @@ export function getStatus(req: Request, res: Response) {
 
 // Creates a new language server session and returns its ID.
 export function createSession(req: Request, res: Response) {
-    const parsedRequest = validateSessionOptions(req, res);
-    if (!parsedRequest) {
+    const sessionOptions = validateSessionOptions(req, res);
+    if (!sessionOptions) {
         return;
     }
 
-    SessionManager.createNewSession(parsedRequest.pyrightVersion)
+    SessionManager.createNewSession(sessionOptions)
         .then((sessionId) => {
             res.status(200).json({ sessionId });
         })
@@ -111,14 +106,32 @@ function validateSessionOptions(req: Request, res: Response): SessionOptions | u
     }
 
     const pyrightVersion = req.body.pyrightVersion;
-    if (pyrightVersion !== undefined && typeof pyrightVersion !== 'string') {
-        res.status(400).json({ message: 'Invalid pyrightVersion' });
-        return undefined;
+    if (pyrightVersion !== undefined) {
+        if (typeof pyrightVersion !== 'string' || !pyrightVersion.match(/1.[0-9]+.[0-9]+/)) {
+            res.status(400).json({ message: 'Invalid pyrightVersion' });
+            return undefined;
+        }
+    }
+
+    const pythonVersion = req.body.pythonVersion;
+    if (pythonVersion !== undefined) {
+        if (typeof pythonVersion !== 'string' || !pythonVersion.match(/3.[0-9]+/)) {
+            res.status(400).json({ message: 'Invalid pythonVersion' });
+            return undefined;
+        }
+    }
+
+    const locale = req.body.locale;
+    if (locale !== undefined) {
+        if (typeof locale !== 'string') {
+            res.status(400).json({ message: 'Invalid locale' });
+            return undefined;
+        }
     }
 
     // TODO - validate other options
 
-    return { pyrightVersion };
+    return { pyrightVersion, pythonVersion, locale };
 }
 
 function validateCodeWithOptions(

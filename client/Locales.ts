@@ -14,64 +14,64 @@ export const supportedLocales: LocalInfo[] = [
         code: '',
     },
     {
-        displayName: 'Czech',
+        displayName: 'Chinese (Simplified) - 中文（简体）',
+        code: 'zh-cn',
+    },
+    {
+        displayName: 'Chinese (Traditional) - 中文（繁體）',
+        code: 'zh-tw',
+    },
+    {
+        displayName: 'Czech - čeština',
         code: 'cs',
-    },
-    {
-        displayName: 'German',
-        code: 'de',
-    },
-    {
-        displayName: 'English (US)',
-        code: 'en-us',
     },
     {
         displayName: 'English',
         code: 'en',
     },
     {
-        displayName: 'Spanish',
-        code: 'es',
+        displayName: 'English (US)',
+        code: 'en-us',
     },
     {
-        displayName: 'French',
+        displayName: 'French - français',
         code: 'fr',
     },
     {
-        displayName: 'Italian',
+        displayName: 'German - Deutsch',
+        code: 'de',
+    },
+    {
+        displayName: 'Italian - italiano',
         code: 'it',
     },
     {
-        displayName: 'Japanese',
+        displayName: 'Japanese - 日本語',
         code: 'ja',
     },
     {
-        displayName: 'Korean',
+        displayName: 'Korean - 한국어',
         code: 'ko',
     },
     {
-        displayName: 'Polish',
+        displayName: 'Polish - polski',
         code: 'pl',
+    },
+    {
+        displayName: 'Spanish - español',
+        code: 'es',
     },
     {
         displayName: 'Portuguese (Brazil)',
         code: 'pt-br',
     },
     {
-        displayName: 'Russian',
+        displayName: 'Russian - русский',
         code: 'ru',
     },
     {
-        displayName: 'Turkish',
+        displayName: 'Turkish - Türkçe',
         code: 'tr',
-    },
-    {
-        displayName: 'Chinese',
-        code: 'zh-cn',
-    },
-    {
-        displayName: 'Chinese (Taiwan)',
-        code: 'zh-tw',
     },
 ];
 

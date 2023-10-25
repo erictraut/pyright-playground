@@ -29,6 +29,7 @@ import {
     Position,
     PublishDiagnosticsParams,
 } from 'vscode-languageserver';
+import { SessionOptions } from './session';
 
 interface DiagnosticRequest {
     callback: (diags: Diagnostic[]) => void;
@@ -55,7 +56,7 @@ export class LspClient {
         this._connection.listen();
     }
 
-    public async initialize() {
+    public async initialize(sessionOptions?: SessionOptions) {
         // Initialize the server.
         console.log('Sending initialization request to language server');
         const init: InitializeParams = {
@@ -76,6 +77,12 @@ export class LspClient {
                 },
             },
         };
+
+        if (sessionOptions?.locale) {
+            console.log(`Requesting locale ${sessionOptions.locale}`);
+            init.locale = sessionOptions.locale;
+        }
+
         await this._connection.sendRequest(InitializeRequest.type, init);
 
         // Update the settings.

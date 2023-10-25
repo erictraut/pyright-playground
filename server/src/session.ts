@@ -10,6 +10,12 @@ import { LspClient } from './lspClient';
 
 export type SessionId = string;
 
+export interface SessionOptions {
+    pythonVersion?: string;
+    pyrightVersion?: string;
+    locale?: string;
+}
+
 export interface Session {
     // A unique ID for this session.
     readonly id: SessionId;
@@ -22,4 +28,7 @@ export interface Session {
 
     // Timestamp of last request to the session.
     lastAccessTime: number;
+
+    // Options associated with the session.
+    options?: SessionOptions;
 }

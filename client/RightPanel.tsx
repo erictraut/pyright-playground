@@ -25,7 +25,7 @@ export interface RightPanelProps {
     latestPyrightVersion?: string;
     supportedPyrightVersions?: string[];
 }
-const rightPanelWidth = 300;
+const rightPanelWidth = 350;
 
 export function RightPanel(props: RightPanelProps) {
     let panelContents: JSX.Element | undefined;
@@ -34,7 +34,7 @@ export function RightPanel(props: RightPanelProps) {
     switch (props.rightPanelType) {
         case RightPanelType.About:
             panelContents = <AboutPanel />;
-            headerTitle = 'Using Pyright Playground';
+            headerTitle = 'Pyright Playground';
             break;
 
         case RightPanelType.Settings:

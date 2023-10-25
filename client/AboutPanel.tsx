@@ -9,6 +9,9 @@ import TextWithLink from './TextWithLink';
 export function AboutPanel() {
     return (
         <View style={styles.container}>
+            <Text style={styles.headerText} selectable={false}>
+                {'USING THE PLAYGROUND'}
+            </Text>
             <Text style={styles.aboutText} selectable={false}>
                 {
                     'Type or paste Python code into the text editor, and Pyright will report any errors it finds.'
@@ -16,6 +19,19 @@ export function AboutPanel() {
             </Text>
             <Text style={styles.aboutText} selectable={false}>
                 {' '}
+            </Text>
+            <TextWithLink
+                style={styles.aboutTextLink}
+                url={'https://github.com/erictraut/pyright-playground'}
+            >
+                {'Pyright Playground GitHub site'}
+            </TextWithLink>
+            <Text style={styles.aboutText} selectable={false}>
+                {' '}
+            </Text>
+            <View style={styles.divider} />
+            <Text style={styles.headerText} selectable={false}>
+                {'PYRIGHT'}
             </Text>
             <Text style={styles.aboutText} selectable={false}>
                 {'Pyright is an open-source standards-based static type checker for Python.'}
@@ -32,12 +48,6 @@ export function AboutPanel() {
             <TextWithLink style={styles.aboutTextLink} url={'https://github.com/Microsoft/pyright'}>
                 {'Pyright GitHub site'}
             </TextWithLink>
-            <TextWithLink
-                style={styles.aboutTextLink}
-                url={'https://github.com/erictraut/pyright-playground'}
-            >
-                {'Pyright Playground GitHub site'}
-            </TextWithLink>
         </View>
     );
 }
@@ -50,12 +60,28 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 16,
     },
+    headerText: {
+        fontSize: 13,
+        color: '#666',
+        marginBottom: 8,
+    },
     aboutTextLink: {
+        marginLeft: 16,
+        marginRight: 8,
         fontSize: 13,
         lineHeight: 24,
     },
     aboutText: {
+        marginLeft: 16,
+        marginRight: 8,
         fontSize: 13,
         color: '#333',
+    },
+    divider: {
+        height: 1,
+        borderTopWidth: 1,
+        borderColor: '#eee',
+        borderStyle: 'solid',
+        marginBottom: 12,
     },
 });

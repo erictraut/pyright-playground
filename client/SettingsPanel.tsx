@@ -3,20 +3,25 @@
  * A panel that displays settings for the app.
  */
 
+import { useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { SettingsCheckbox } from './SettingsCheckBox';
+import { CheckmarkMenu, CheckmarkMenuItem } from './CheckmarkMenu';
+import IconButton from './IconButton';
+import { getLocaleDisplayName, supportedLocales } from './Locales';
+import { Menu, MenuRef } from './Menu';
 import { PlaygroundSettings } from './PlaygroundSettings';
+import PushButton from './PushButton';
 import {
     PyrightConfigSetting,
     configSettings,
     configSettingsAlphabetized,
 } from './PyrightConfigSettings';
-import PushButton from './PushButton';
-import IconButton from './IconButton';
-import { CheckmarkMenu, CheckmarkMenuItem } from './CheckmarkMenu';
-import { useRef } from 'react';
-import { Menu, MenuItemProps, MenuRef } from './Menu';
-import { getLocaleDisplayName, supportedLocales } from './Locales';
+import { SettingsCheckbox } from './SettingsCheckBox';
+
+interface ConfigOptionWithValue {
+    name: string;
+    value: boolean;
+}
 
 export interface SettingsPanelProps {
     settings: PlaygroundSettings;
@@ -31,6 +36,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     const pythonVersionMenuRef = useRef<MenuRef>(null);
     const pythonPlatformMenuRef = useRef<MenuRef>(null);
     const localMenuRef = useRef<MenuRef>(null);
+    const configOverrides = getNonDefaultConfigOptions(props.settings);
 
     return (
         <View style={styles.container}>
@@ -48,33 +54,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
                     });
                 }}
             />
-            {/* {configSettingsAlphabetized.map((setting) => {
-                const isEnabled = !!props.settings.configOverrides[setting.name];
-                return (
-                    <SettingsCheckbox
-                        key={setting.name}
-                        label={setting.name}
-                        title={setting.description}
-                        disabled={setting.isEnabledInStrict && props.settings.strictMode}
-                        value={
-                            isEnabled || (setting.isEnabledInStrict && props.settings.strictMode)
-                        }
-                        onChange={() => {
-                            props.onUpdateSettings({
-                                ...props.settings,
-                                configOverrides: {
-                                    ...props.settings.configOverrides,
-                                    [setting.name]: !isEnabled,
-                                },
-                            });
-                        }}
-                    />
-                );
-            })} */}
 
             <View style={styles.selectionContainer}>
                 <Text style={styles.selectedOptionText} selectable={false}>
-                    {getConfigOptionsSummary(props.settings)}
+                    {configOverrides.length === 0 ? 'Default' : 'Custom'}
                 </Text>
                 <IconButton
                     iconName="downcircleo"
@@ -95,6 +78,25 @@ export function SettingsPanel(props: SettingsPanelProps) {
                         }}
                     />
                 </Menu>
+            </View>
+            <View style={styles.overridesContainer}>
+                {configOverrides.map((config) => {
+                    return (
+                        <ConfigOverride
+                            key={config.name}
+                            config={config}
+                            onRemove={() => {
+                                const configOverrides = { ...props.settings.configOverrides };
+                                delete configOverrides[config.name];
+
+                                props.onUpdateSettings({
+                                    ...props.settings,
+                                    configOverrides,
+                                });
+                            }}
+                        />
+                    );
+                })}
             </View>
 
             <SettingsDivider />
@@ -273,6 +275,30 @@ function SettingsDivider() {
     return <View style={styles.divider} />;
 }
 
+interface ConfigOverrideProps {
+    config: ConfigOptionWithValue;
+    onRemove: () => void;
+}
+
+function ConfigOverride(props: ConfigOverrideProps) {
+    const text = `${props.config.name}=${props.config.value.toString()}`;
+
+    return (
+        <View style={styles.configOverrideContainer}>
+            <Text style={styles.configOverrideText} selectable={false} numberOfLines={1}>
+                {text}
+            </Text>
+            <IconButton
+                iconName="close"
+                iconSize={12}
+                color="#669"
+                hoverColor="#336"
+                onPress={props.onRemove}
+            />
+        </View>
+    );
+}
+
 function areSettingsDefault(settings: PlaygroundSettings): boolean {
     return (
         Object.keys(settings.configOverrides).length === 0 &&
@@ -284,9 +310,25 @@ function areSettingsDefault(settings: PlaygroundSettings): boolean {
     );
 }
 
-function getConfigOptionsSummary(settings: PlaygroundSettings): string {
-    // TODO - need to implement
-    return 'Default';
+function getNonDefaultConfigOptions(settings: PlaygroundSettings): ConfigOptionWithValue[] {
+    const overrides: ConfigOptionWithValue[] = [];
+
+    configSettingsAlphabetized.forEach((configInfo) => {
+        // If strict mode is in effect, don't consider overrides if the
+        // config option is always on in strict mode.
+        if (settings.strictMode && configInfo.isEnabledInStrict) {
+            return;
+        }
+
+        const defaultValue = configInfo.isEnabledInBasic;
+        const overrideValue = settings.configOverrides[configInfo.name] ?? defaultValue;
+
+        if (defaultValue !== overrideValue) {
+            overrides.push({ name: configInfo.name, value: overrideValue });
+        }
+    });
+
+    return overrides;
 }
 
 function getConfigOptionMenuItem(
@@ -359,5 +401,22 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#333',
         flex: 1,
+    },
+    overridesContainer: {
+        flexDirection: 'column',
+        marginTop: 4,
+    },
+    configOverrideContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginLeft: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 4,
+    },
+    configOverrideText: {
+        flex: -1,
+        fontSize: 12,
+        color: '#333',
     },
 });

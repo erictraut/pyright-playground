@@ -7,14 +7,14 @@ import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { MenuProvider } from 'react-native-popup-menu';
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver-types';
-import HeaderPanel from './HeaderPanel';
+import { HeaderPanel } from './HeaderPanel';
 import { getInitialStateFromLocalStorage, setStateToLocalStorage } from './LocalStorageUtils';
 import { LspClient } from './LspClient';
+import { LspSession } from './LspSession';
 import { MonacoEditor } from './MonacoEditor';
+import { PlaygroundSettings } from './PlaygroundSettings';
 import { ProblemsPanel } from './ProblemsPanel';
 import { RightPanel, RightPanelType } from './RightPanel';
-import { PlaygroundSettings } from './PlaygroundSettings';
-import { LspSession } from './LspSession';
 
 const lspClient = new LspClient();
 
@@ -24,6 +24,7 @@ export interface AppState {
     diagnostics: Diagnostic[];
 
     settings: PlaygroundSettings;
+    requestedPyrightVersion: boolean;
     latestPyrightVersion?: string;
     supportedPyrightVersions?: string[];
 
@@ -39,9 +40,10 @@ export default function App() {
         settings: {
             configOverrides: {},
         },
+        requestedPyrightVersion: false,
         diagnostics: [],
         isRightPanelDisplayed: true,
-        rightPanelType: RightPanelType.Settings,
+        rightPanelType: RightPanelType.About,
     });
 
     useEffect(() => {
@@ -63,29 +65,43 @@ export default function App() {
         }
     }, [appState.gotInitialState]);
 
-    // Request the latest version of pyright
+    // Request general status, including supported versions of pyright
+    // from the service.
     useEffect(() => {
-        LspSession.getPyrightServiceStatus()
-            .then((status) => {
-                const pyrightVersions = status.pyrightVersions;
-
-                setAppState((prevState) => {
-                    return {
-                        ...prevState,
-                        latestPyrightVersion:
-                            pyrightVersions.length > 0 ? pyrightVersions[0] : undefined,
-                        supportedPyrightVersions: pyrightVersions,
-                    };
-                });
-            })
-            .catch((err) => {
-                // Ignore errors here.
+        if (!appState.requestedPyrightVersion) {
+            setAppState((prevState) => {
+                return {
+                    ...prevState,
+                    requestedPyrightVersion: true,
+                };
             });
+
+            LspSession.getPyrightServiceStatus()
+                .then((status) => {
+                    const pyrightVersions = status.pyrightVersions;
+
+                    setAppState((prevState) => {
+                        return {
+                            ...prevState,
+                            latestPyrightVersion:
+                                pyrightVersions.length > 0 ? pyrightVersions[0] : undefined,
+                            supportedPyrightVersions: pyrightVersions,
+                        };
+                    });
+                })
+                .catch((err) => {
+                    // Ignore errors here.
+                });
+        }
     });
 
     useEffect(() => {
         setStateToLocalStorage({ code: appState.code, settings: appState.settings });
     }, [appState.code, appState.settings]);
+
+    useEffect(() => {
+        lspClient.updateSettings(appState.settings);
+    }, [appState.settings]);
 
     lspClient.requestNotification({
         onDiagnostics: (diagnostics: Diagnostic[]) => {

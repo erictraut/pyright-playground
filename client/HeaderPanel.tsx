@@ -16,7 +16,7 @@ export interface HeaderPanelProps {
     onShowRightPanel: (rightPanelType?: RightPanelType) => void;
 }
 
-export default function HeaderPanel(props: HeaderPanelProps) {
+export function HeaderPanel(props: HeaderPanelProps) {
     const [assets, error] = useAssets([require('./assets/pyright_bw.png')]);
 
     let image = null;

@@ -4,7 +4,8 @@
  */
 
 import { Diagnostic, Position, Range } from 'vscode-languageserver-types';
-import { endpointGet, endpointPost } from './EndpointUtils';
+import { endpointDelete, endpointGet, endpointPost } from './EndpointUtils';
+import { PlaygroundSettings } from './PlaygroundSettings';
 
 export interface HoverInfo {
     contents: {
@@ -32,6 +33,15 @@ if (currentUrl.hostname === 'localhost') {
 
 export class LspSession {
     private _sessionId: string | undefined;
+    private _settings: PlaygroundSettings | undefined;
+
+    updateSettings(settings: PlaygroundSettings) {
+        this._settings = settings;
+
+        // Force the current session to close so we can
+        // create a new one with the updated settings.
+        this._closeSession();
+    }
 
     static async getPyrightServiceStatus(): Promise<ServerStatus> {
         const endpoint = appServerApiAddressPrefix + `status`;
@@ -122,8 +132,19 @@ export class LspSession {
             return Promise.resolve(this._sessionId);
         }
 
+        const sessionOptions: any = {};
+        if (this._settings?.pyrightVersion) {
+            sessionOptions.pyrightVersion = this._settings.pyrightVersion;
+        }
+
+        if (this._settings?.pythonVersion) {
+            sessionOptions.pythonVersion = this._settings.pythonVersion;
+        }
+
+        sessionOptions.locale = this._settings.locale ?? navigator.language;
+
         const endpoint = appServerApiAddressPrefix + `session`;
-        const sessionId = await endpointPost(endpoint, {}, JSON.stringify({})).then(
+        const sessionId = await endpointPost(endpoint, {}, JSON.stringify(sessionOptions)).then(
             async (response) => {
                 const data = await response.json();
                 if (!response.ok) {
@@ -135,5 +156,18 @@ export class LspSession {
 
         this._sessionId = sessionId;
         return sessionId;
+    }
+
+    private async _closeSession(): Promise<void> {
+        const sessionId = this._sessionId;
+        if (!sessionId) {
+            return;
+        }
+
+        // Immediately discard the old session ID.
+        this._sessionId = undefined;
+
+        const endpoint = appServerApiAddressPrefix + `session/${sessionId}`;
+        await endpointDelete(endpoint, {});
     }
 }
