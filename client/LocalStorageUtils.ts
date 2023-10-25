@@ -12,7 +12,10 @@ export function getInitialStateFromLocalStorage(): PlaygroundState {
 
     if (initialStateJson) {
         try {
-            return JSON.parse(initialStateJson);
+            const result = JSON.parse(initialStateJson);
+            if (result.code !== undefined && result.settings !== undefined) {
+                return result;
+            }
         } catch {
             // Fall through.
         }

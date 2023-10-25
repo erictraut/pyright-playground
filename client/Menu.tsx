@@ -118,7 +118,8 @@ export function MenuItem(props: MenuItemProps) {
 
 const styles = StyleSheet.create({
     container: {
-        padding: 2,
+        paddingVertical: 2,
+        paddingHorizontal: 6,
         flexDirection: 'row',
         alignItems: 'center',
         borderRadius: 4,

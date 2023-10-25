@@ -3,7 +3,7 @@
  * A menu that displays a checkmark next to items.
  */
 
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { MenuItem } from './Menu';
 
 export interface CheckmarkMenuProps {
@@ -40,10 +40,7 @@ export function CheckmarkMenu(props: CheckmarkMenuProps) {
 const styles = StyleSheet.create({
     container: {
         flexDirection: 'column',
+        minWidth: 100,
         maxHeight: 300,
-    },
-    itemContainer: {
-        flexDirection: 'row',
-        padding: 8,
     },
 });
