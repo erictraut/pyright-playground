@@ -15,12 +15,6 @@ import {
 } from 'vscode-jsonrpc/node';
 import {
     ConfigurationParams,
-    Declaration,
-    DeclarationParams,
-    DeclarationRequest,
-    Definition,
-    DefinitionParams,
-    DefinitionRequest,
     Diagnostic,
     DiagnosticTag,
     DidChangeConfigurationParams,
@@ -31,7 +25,6 @@ import {
     HoverRequest,
     InitializeParams,
     InitializeRequest,
-    LocationLink,
     LogMessageParams,
     Position,
     PublishDiagnosticsParams,
@@ -238,58 +231,6 @@ export class LspClient {
 
         const result = await this._connection
             .sendRequest(SignatureHelpRequest.type, params)
-            .catch((err) => {
-                // Don't return an error. Just return null (no info).
-                return null;
-            });
-
-        return result;
-    }
-
-    async getDefinition(
-        code: string,
-        position: Position
-    ): Promise<Definition | LocationLink[] | null> {
-        let documentVersion = this._documentVersion;
-        if (this._documentText !== code) {
-            documentVersion = await this.updateTextDocument(code);
-        }
-
-        const params: DefinitionParams = {
-            textDocument: {
-                uri: documentUri,
-            },
-            position,
-        };
-
-        const result = await this._connection
-            .sendRequest(DefinitionRequest.type, params)
-            .catch((err) => {
-                // Don't return an error. Just return null (no info).
-                return null;
-            });
-
-        return result;
-    }
-
-    async getDeclaration(
-        code: string,
-        position: Position
-    ): Promise<Declaration | LocationLink[] | null> {
-        let documentVersion = this._documentVersion;
-        if (this._documentText !== code) {
-            documentVersion = await this.updateTextDocument(code);
-        }
-
-        const params: DeclarationParams = {
-            textDocument: {
-                uri: documentUri,
-            },
-            position,
-        };
-
-        const result = await this._connection
-            .sendRequest(DeclarationRequest.type, params)
             .catch((err) => {
                 // Don't return an error. Just return null (no info).
                 return null;
