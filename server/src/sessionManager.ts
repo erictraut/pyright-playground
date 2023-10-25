@@ -12,6 +12,7 @@ import * as path from 'path';
 import { v4 as uuid } from 'uuid';
 import { LspClient } from './lspClient';
 import { Session, SessionId, SessionOptions } from './session';
+import { logger } from './logging';
 
 export interface InstallPyrightInfo {
     pyrightVersion: string;
@@ -102,7 +103,7 @@ export async function getPyrightLatestVersion(): Promise<string> {
     return packageJson('pyright')
         .then((response) => {
             if (typeof response.version === 'string') {
-                console.log(`Received response from package-json: ${response.version}`);
+                logger.info(`Received latest pyright version from npm index: ${response.version}`);
                 return response.version;
             }
 
@@ -119,7 +120,7 @@ export function startSession(
 ): Promise<SessionId> {
     return new Promise<SessionId>((resolve, reject) => {
         // Launch a new instance of the language server in another process.
-        console.log(`Spawning new pyright language server from ${binaryDirPath}`);
+        logger.info(`Spawning new pyright language server from ${binaryDirPath}`);
         const binaryPath = path.join(
             process.cwd(),
             binaryDirPath,
@@ -165,7 +166,7 @@ export function startSession(
         activeSessions.set(sessionId, session);
 
         langServerProcess.on('spawn', () => {
-            console.log(`Pyright language server started`);
+            logger.info(`Pyright language server started`);
             session.langServerProcess = langServerProcess;
             session.langClient = new LspClient(langServerProcess);
 
@@ -184,7 +185,7 @@ export function startSession(
             // Errors can be reported for a variety of reasons even after
             // the language server has been started.
             if (!session.langServerProcess) {
-                console.log(`Pyright language server failed to start: ${err.message}`);
+                logger.error(`Pyright language server failed to start: ${err.message}`);
                 reject(`Failed to spawn pyright language server instance`);
             }
 
@@ -192,48 +193,47 @@ export function startSession(
         });
 
         langServerProcess.on('exit', (code) => {
-            console.log(`Pyright language server exited with code ${code}`);
+            logger.info(`Pyright language server exited with code ${code}`);
             closeSession(sessionId);
         });
 
         langServerProcess.on('close', (code) => {
-            console.log(`Pyright language server closed with code ${code}`);
+            logger.info(`Pyright language server closed with code ${code}`);
             closeSession(sessionId);
         });
     });
 }
 
 async function installPyright(requestedVersion: string | undefined): Promise<InstallPyrightInfo> {
-    console.log(`Pyright version ${requestedVersion || 'latest'} requested`);
+    logger.info(`Pyright version ${requestedVersion || 'latest'} requested`);
 
     let version: string;
     if (requestedVersion) {
         version = requestedVersion;
     } else {
-        console.log(`Fetching latest version of pyright`);
         version = await getPyrightLatestVersion();
-        console.log(`Latest version of pyright is ${version}`);
     }
 
     return new Promise<InstallPyrightInfo>((resolve, reject) => {
         const dirName = `./pyright_local/${version}`;
 
         if (fs.existsSync(dirName)) {
-            console.log(`Pyright version ${version} already installed`);
+            logger.info(`Pyright version ${version} already installed`);
             resolve({ pyrightVersion: version, localDirectory: dirName });
             return;
         }
 
-        console.log(`Attempting to install pyright version ${version}`);
+        logger.info(`Attempting to install pyright version ${version}`);
         exec(
             `mkdir -p ${dirName}/node_modules && cd ${dirName} && npm install pyright@${version}`,
             (err) => {
                 if (err) {
+                    logger.error(`Failed to install pyright ${version}`);
                     reject(`Failed to install pyright@${version}`);
                     return;
                 }
 
-                console.log(`Install of pyright ${version} succeeded`);
+                logger.info(`Install of pyright ${version} succeeded`);
 
                 resolve({ pyrightVersion: version, localDirectory: dirName });
             }
@@ -264,7 +264,6 @@ function synthesizePyrightConfigFile(tempDirPath: string, sessionOptions?: Sessi
     }
 
     const configJson = JSON.stringify(config);
-    console.log(`Writing config to path ${configFilePath}: ${configJson}`);
     fs.writeFileSync(configFilePath, configJson);
 }
 
@@ -283,7 +282,7 @@ function scheduleSessionLifetimeTimer() {
 
         activeSessions.forEach((session, sessionId) => {
             if (curTime - session.lastAccessTime > maxSessionLifetime) {
-                console.log(`Session ${sessionId} timed out; deleting`);
+                logger.info(`Session ${sessionId} timed out; deleting`);
                 closeSession(sessionId);
                 activeSessions.delete(sessionId);
             }

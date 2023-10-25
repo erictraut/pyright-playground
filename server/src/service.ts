@@ -7,6 +7,7 @@ import { Request, Response } from 'express';
 import * as SessionManager from './sessionManager';
 import { Session, SessionOptions } from './session';
 import { Position } from 'vscode-languageserver';
+import { logger } from './logging';
 
 interface CodeWithOptions {
     code: string;
@@ -21,7 +22,7 @@ export function getStatus(req: Request, res: Response) {
             res.status(200).json({ pyrightVersions });
         })
         .catch((err) => {
-            console.error(`getStatus returning a 500: ${err}`);
+            logger.error(`getStatus returning a 500: ${err}`);
             res.status(500).json({ message: err || 'An unexpected error occurred' });
         });
 }
@@ -38,7 +39,7 @@ export function createSession(req: Request, res: Response) {
             res.status(200).json({ sessionId });
         })
         .catch((err) => {
-            console.error(`createNewSession returning a 500: ${err}`);
+            logger.error(`createNewSession returning a 500: ${err}`);
             res.status(500).json({ message: err || 'An unexpected error occurred' });
         });
 }
@@ -73,7 +74,7 @@ export function getDiagnostics(req: Request, res: Response) {
             res.status(200).json({ diagnostics });
         })
         .catch((err) => {
-            console.error(`getDiagnostics returning a 500: ${err}`);
+            logger.error(`getDiagnostics returning a 500: ${err}`);
             res.status(500).json({ message: err || 'An unexpected error occurred' });
         });
 }
@@ -98,7 +99,7 @@ export function getHoverInfo(req: Request, res: Response) {
             res.status(200).json({ hover });
         })
         .catch((err) => {
-            console.error(`getHoverInfo returning a 500: ${err}`);
+            logger.error(`getHoverInfo returning a 500: ${err}`);
             res.status(500).json({ message: err || 'An unexpected error occurred' });
         });
 }
@@ -123,7 +124,7 @@ export function getSignatureHelp(req: Request, res: Response) {
             res.status(200).json({ signatureHelp });
         })
         .catch((err) => {
-            console.error(`getHoverInfo returning a 500: ${err}`);
+            logger.error(`getHoverInfo returning a 500: ${err}`);
             res.status(500).json({ message: err || 'An unexpected error occurred' });
         });
 }

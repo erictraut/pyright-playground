@@ -33,6 +33,7 @@ import {
     SignatureHelpRequest,
 } from 'vscode-languageserver';
 import { SessionOptions } from './session';
+import { logger } from './logging';
 
 interface DiagnosticRequest {
     callback: (diags: Diagnostic[], error?: Error) => void;
@@ -61,7 +62,6 @@ export class LspClient {
 
     public async initialize(projectPath: string, sessionOptions?: SessionOptions) {
         // Initialize the server.
-        console.log('Sending initialization request to language server');
         const init: InitializeParams = {
             rootUri: `file://${projectPath}`,
             rootPath: projectPath,
@@ -83,7 +83,6 @@ export class LspClient {
         };
 
         if (sessionOptions?.locale) {
-            console.log(`Requesting locale ${sessionOptions.locale}`);
             init.locale = sessionOptions.locale;
         }
 
@@ -116,7 +115,7 @@ export class LspClient {
             (diagInfo) => {
                 const diagVersion = diagInfo.version ?? -1;
 
-                console.log(`Received diagnostics for version: ${diagVersion}`);
+                logger.info(`Received diagnostics for version: ${diagVersion}`);
 
                 // Update the cached diagnostics.
                 if (
@@ -140,7 +139,7 @@ export class LspClient {
         this._connection.onNotification(
             new NotificationType<LogMessageParams>('window/logMessage'),
             (info) => {
-                console.log(`Received log message: ${info.message}`);
+                logger.info(`Language server log message: ${info.message}`);
             }
         );
 
@@ -148,7 +147,7 @@ export class LspClient {
         this._connection.onRequest(
             new RequestType<ConfigurationParams, any, any>('workspace/configuration'),
             (params) => {
-                console.log(`Received configuration param request: ${JSON.stringify(params)}}`);
+                logger.info(`Language server config request: ${JSON.stringify(params)}}`);
                 return [];
             }
         );
@@ -186,7 +185,7 @@ export class LspClient {
                         return;
                     }
 
-                    console.log(`Diagnostic callback ${JSON.stringify(diagnostics)}}`);
+                    logger.info(`Diagnostic callback ${JSON.stringify(diagnostics)}}`);
                     resolve(diagnostics);
                 },
             });
@@ -245,7 +244,7 @@ export class LspClient {
         let documentVersion = ++this._documentVersion;
         this._documentText = code;
 
-        console.log(`Updating text document to version ${documentVersion}`);
+        logger.info(`Updating text document to version ${documentVersion}`);
 
         // Send the updated text to the language server.
         return this._connection
@@ -264,11 +263,11 @@ export class LspClient {
                 }
             )
             .then(() => {
-                console.log(`Successfully sent text document to language server`);
+                logger.info(`Successfully sent text document to language server`);
                 return documentVersion;
             })
             .catch((err) => {
-                console.log(`Error sending text document to language server: ${err}`);
+                logger.error(`Error sending text document to language server: ${err}`);
                 throw err;
             });
     }
@@ -285,7 +284,7 @@ export class LspClient {
     }
 
     private static _logServerData(data: any) {
-        console.log(
+        logger.info(
             `Logged from pyright language server: ${
                 typeof data === 'string' ? data : data.toString('utf8')
             }`

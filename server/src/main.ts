@@ -8,14 +8,17 @@ import * as dotenv from 'dotenv';
 import express from 'express';
 import * as path from 'path';
 import routes from './routes';
+import { logger, configureRemoteLogging } from './logging';
 
 try {
     // Load environment variables from ".env" file.
     dotenv.config();
 
+    configureRemoteLogging(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING);
+
     startService();
 } catch (err) {
-    console.error(`Uncaught exception: ${err}`);
+    logger.error(`Uncaught exception: ${err}`);
     throw err;
 }
 
@@ -34,6 +37,6 @@ function startService() {
     });
 
     app.listen(apiPort, () => {
-        console.log(`API running on port ${apiPort}`);
+        logger.info(`API running on port ${apiPort}`);
     });
 }
