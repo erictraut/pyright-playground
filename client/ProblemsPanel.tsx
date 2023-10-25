@@ -4,14 +4,19 @@
  */
 
 import Icon from '@expo/vector-icons/AntDesign';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver-types';
 import { useHover } from './HoverHook';
+import { useEffect, useRef } from 'react';
 
 export interface ProblemsPanelProps {
     diagnostics: Diagnostic[];
     onSelectRange: (range: Range) => void;
+    expandProblems: boolean;
 }
+
+const problemsPanelHeight = 200;
+const problemsPanelHeightCollapsed = 32;
 
 export function ProblemsPanel(props: ProblemsPanelProps) {
     // We don't display hints in the problems panel.
@@ -19,30 +24,52 @@ export function ProblemsPanel(props: ProblemsPanelProps) {
         (diag) => diag.severity !== DiagnosticSeverity.Hint
     );
 
+    // Animate the appearance of the problems panel.
+    const heightAnimation = useRef(
+        new Animated.Value(
+            props.expandProblems ? problemsPanelHeight : problemsPanelHeightCollapsed
+        )
+    ).current;
+
+    useEffect(() => {
+        Animated.timing(heightAnimation, {
+            toValue: props.expandProblems ? problemsPanelHeight : problemsPanelHeightCollapsed,
+            duration: 250,
+            useNativeDriver: false,
+            easing: Easing.ease,
+        }).start();
+    }, [heightAnimation, props.expandProblems]);
+
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.problemText} selectable={false}>
-                    Problems
-                </Text>
-                <View style={styles.problemCountBubble}>
-                    <Text style={styles.problemCountText} selectable={false}>
-                        {filteredDiagnostics.length.toString()}
-                    </Text>
+        <Animated.View style={[styles.animatedContainer, { height: heightAnimation }]}>
+            <View style={styles.container}>
+                <View style={styles.header}>
+                    {props.expandProblems ? (
+                        <View style={styles.headerContents}>
+                            <Text style={styles.problemText} selectable={false}>
+                                Problems
+                            </Text>
+                            <View style={styles.problemCountBubble}>
+                                <Text style={styles.problemCountText} selectable={false}>
+                                    {filteredDiagnostics.length.toString()}
+                                </Text>
+                            </View>
+                        </View>
+                    ) : undefined}
                 </View>
+                <ScrollView>
+                    {filteredDiagnostics.map((diag, index) => {
+                        return (
+                            <ProblemItem
+                                key={index}
+                                diagnostic={diag}
+                                onSelectRange={props.onSelectRange}
+                            />
+                        );
+                    })}
+                </ScrollView>
             </View>
-            <ScrollView>
-                {filteredDiagnostics.map((diag, index) => {
-                    return (
-                        <ProblemItem
-                            key={index}
-                            diagnostic={diag}
-                            onSelectRange={props.onSelectRange}
-                        />
-                    );
-                })}
-            </ScrollView>
-        </View>
+        </Animated.View>
     );
 }
 
@@ -98,17 +125,27 @@ function ProblemIcon(props: { severity: DiagnosticSeverity }) {
 }
 
 const styles = StyleSheet.create({
+    animatedContainer: {
+        position: 'relative',
+        alignSelf: 'stretch',
+    },
     container: {
         flexDirection: 'column',
-        height: 200,
+        height: problemsPanelHeight,
         borderTopColor: '#ccc',
         borderTopWidth: 1,
         borderStyle: 'solid',
+        alignSelf: 'stretch',
     },
     header: {
         height: 32,
         paddingHorizontal: 8,
         backgroundColor: '#336',
+        flexDirection: 'row',
+        alignSelf: 'stretch',
+        alignItems: 'center',
+    },
+    headerContents: {
         flexDirection: 'row',
         alignSelf: 'stretch',
         alignItems: 'center',

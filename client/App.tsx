@@ -31,6 +31,8 @@ export interface AppState {
 
     isRightPanelDisplayed: boolean;
     rightPanelType: RightPanelType;
+
+    isProblemsPanelDisplayed: boolean;
 }
 
 export default function App() {
@@ -45,6 +47,7 @@ export default function App() {
         diagnostics: [],
         isRightPanelDisplayed: true,
         rightPanelType: RightPanelType.About,
+        isProblemsPanelDisplayed: false,
     });
 
     useEffect(() => {
@@ -61,6 +64,8 @@ export default function App() {
                     gotInitialState: true,
                     code: initialState.code,
                     settings: initialState.settings,
+                    isProblemsPanelDisplayed:
+                        prevState.isProblemsPanelDisplayed || initialState.code !== '',
                 };
             });
         }
@@ -162,7 +167,7 @@ export default function App() {
                             lspClient.updateCode(code);
 
                             setAppState((prevState) => {
-                                return { ...prevState, code };
+                                return { ...prevState, code, isProblemsPanelDisplayed: true };
                             });
                         }}
                     />
@@ -187,6 +192,7 @@ export default function App() {
                             editorRef.current.selectRange(range);
                         }
                     }}
+                    expandProblems={appState.isProblemsPanelDisplayed}
                 />
             </View>
         </MenuProvider>
