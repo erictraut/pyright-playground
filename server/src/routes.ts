@@ -12,6 +12,8 @@ import {
     getHoverInfo,
     getStatus,
     getSignatureHelp,
+    getDefinition,
+    getDeclaration,
 } from './service';
 
 const router = express.Router();
@@ -50,4 +52,12 @@ router.post('/session/:sid/hover', (req, res) => {
 
 router.post('/session/:sid/signature', (req, res) => {
     getSignatureHelp(req, res);
+});
+
+router.post('/session/:sid/definition', (req, res) => {
+    getDefinition(req, res);
+});
+
+router.post('/session/:sid/declaration', (req, res) => {
+    getDeclaration(req, res);
 });

@@ -128,6 +128,52 @@ export function getSignatureHelp(req: Request, res: Response) {
         });
 }
 
+export function getDefinition(req: Request, res: Response) {
+    const session = validateSession(req, res);
+    const langClient = session?.langClient;
+    if (!langClient) {
+        return;
+    }
+
+    const codeWithOptions = validateCodeWithOptions(req, res, ['position']);
+    if (!codeWithOptions) {
+        return;
+    }
+
+    langClient
+        .getDefinition(codeWithOptions.code, codeWithOptions.position!)
+        .then((definition) => {
+            res.status(200).json({ definition });
+        })
+        .catch((err) => {
+            console.error(`getDefinition returning a 500: ${err}`);
+            res.status(500).json({ message: err || 'An unexpected error occurred' });
+        });
+}
+
+export function getDeclaration(req: Request, res: Response) {
+    const session = validateSession(req, res);
+    const langClient = session?.langClient;
+    if (!langClient) {
+        return;
+    }
+
+    const codeWithOptions = validateCodeWithOptions(req, res, ['position']);
+    if (!codeWithOptions) {
+        return;
+    }
+
+    langClient
+        .getDeclaration(codeWithOptions.code, codeWithOptions.position!)
+        .then((declaration) => {
+            res.status(200).json({ declaration });
+        })
+        .catch((err) => {
+            console.error(`getDeclaration returning a 500: ${err}`);
+            res.status(500).json({ message: err || 'An unexpected error occurred' });
+        });
+}
+
 function validateSessionOptions(req: Request, res: Response): SessionOptions | undefined {
     if (!req.body || typeof req.body !== 'object') {
         res.status(400).json({ message: 'Invalid request body' });

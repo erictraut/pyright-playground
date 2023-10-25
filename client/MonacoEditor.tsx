@@ -8,7 +8,7 @@ import Editor, { loader } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver-types';
+import { Diagnostic, DiagnosticSeverity, Location, Range } from 'vscode-languageserver-types';
 import { LspClient } from './LspClient';
 
 loader
@@ -20,6 +20,14 @@ loader
         monaco.languages.registerSignatureHelpProvider('python', {
             provideSignatureHelp: handleSignatureHelpRequest,
             signatureHelpTriggerCharacters: ['(', ','],
+        });
+        monaco.languages.registerDefinitionProvider('python', {
+            provideDefinition: (model, position) =>
+                handleDefinitionOrDeclarationRequest(model, position, true),
+        });
+        monaco.languages.registerDeclarationProvider('python', {
+            provideDeclaration: (model, position) =>
+                handleDefinitionOrDeclarationRequest(model, position, false),
         });
     })
     .catch((error) => console.error('An error occurred during initialization of Monaco: ', error));
@@ -233,6 +241,49 @@ async function handleSignatureHelpRequest(
             },
             dispose: () => {},
         };
+    } catch (err) {
+        return null;
+    }
+}
+
+async function handleDefinitionOrDeclarationRequest(
+    model: monaco.editor.ITextModel,
+    position: monaco.Position,
+    isDefinition: boolean
+): Promise<monaco.languages.Definition> {
+    const lspClient = getLspClientForModel(model);
+    if (!lspClient) {
+        return null;
+    }
+
+    try {
+        const defInfo = await lspClient.getDefinitionOrDefinitionForPosition(
+            model.getValue(),
+            {
+                line: position.lineNumber - 1,
+                character: position.column - 1,
+            },
+            isDefinition
+        );
+
+        function convertLocation(loc: Location): monaco.languages.Location {
+            // If the URI points to some other file, return null to indicate
+            // that we cannot open that file.
+            if (loc.uri !== 'file:///Untitled.py') {
+                return null;
+            }
+
+            return {
+                uri: model.uri,
+                range: convertRange(loc.range),
+            };
+        }
+
+        if (!Array.isArray(defInfo)) {
+            return convertLocation(defInfo);
+        } else {
+            return defInfo.map((def) => convertLocation(def));
+        }
     } catch (err) {
         return null;
     }
