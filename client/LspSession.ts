@@ -4,7 +4,7 @@
  */
 
 import { Diagnostic, Position, Range } from 'vscode-languageserver-types';
-import { endpointPost } from './EndpointUtils';
+import { endpointGet, endpointPost } from './EndpointUtils';
 
 export interface HoverInfo {
     contents: {
@@ -12,6 +12,10 @@ export interface HoverInfo {
         value: string;
     };
     range: Range;
+}
+
+export interface ServerStatus {
+    pyrightVersions: string[];
 }
 
 // Number of attempts to create a new session before giving up.
@@ -28,6 +32,21 @@ if (currentUrl.hostname === 'localhost') {
 
 export class LspSession {
     private _sessionId: string | undefined;
+
+    static async getPyrightServiceStatus(): Promise<ServerStatus> {
+        const endpoint = appServerApiAddressPrefix + `status`;
+        return endpointGet(endpoint, {})
+            .then(async (response) => {
+                const data = await response.json();
+                if (!response.ok) {
+                    throw data;
+                }
+                return { pyrightVersions: data.pyrightVersions };
+            })
+            .catch((err) => {
+                throw err;
+            });
+    }
 
     async getDiagnostics(code: string): Promise<Diagnostic[]> {
         return this._doWithSession<Diagnostic[]>(async (sessionId) => {

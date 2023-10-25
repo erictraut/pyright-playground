@@ -51,11 +51,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
     },
     aboutTextLink: {
-        fontSize: 14,
+        fontSize: 13,
         lineHeight: 24,
     },
     aboutText: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#333',
     },
 });

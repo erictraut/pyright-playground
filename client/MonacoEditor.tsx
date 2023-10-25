@@ -35,6 +35,7 @@ const options: monaco.editor.IStandaloneEditorConstructionOptions = {
     fontFamily: 'Monaco, Menlo, "Courier New", monospace',
     showUnused: true,
     wordBasedSuggestions: false,
+    overviewRulerLanes: 0,
 };
 
 interface RegisteredModel {

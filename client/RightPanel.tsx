@@ -22,6 +22,8 @@ export interface RightPanelProps {
     onShowRightPanel: (rightPanelType?: RightPanelType) => void;
     settings: PlaygroundSettings;
     onUpdateSettings: (settings: PlaygroundSettings) => void;
+    latestPyrightVersion?: string;
+    supportedPyrightVersions?: string[];
 }
 const rightPanelWidth = 300;
 
@@ -40,6 +42,8 @@ export function RightPanel(props: RightPanelProps) {
                 <SettingsPanel
                     settings={props.settings}
                     onUpdateSettings={props.onUpdateSettings}
+                    latestPyrightVersion={props.latestPyrightVersion}
+                    supportedPyrightVersions={props.supportedPyrightVersions}
                 />
             );
             headerTitle = 'Playground Settings';

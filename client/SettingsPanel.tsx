@@ -21,7 +21,7 @@ import { getLocaleDisplayName, supportedLocales } from './Locales';
 export interface SettingsPanelProps {
     settings: PlaygroundSettings;
     latestPyrightVersion?: string;
-    availablePyrightVersions?: string[];
+    supportedPyrightVersions?: string[];
     onUpdateSettings: (settings: PlaygroundSettings) => void;
 }
 
@@ -117,7 +117,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 />
                 <Menu name={'pyrightVersion'} ref={pyrightVersionMenuRef}>
                     <CheckmarkMenu
-                        items={['Latest', ...(props.availablePyrightVersions ?? [])].map((item) => {
+                        items={['Latest', ...(props.supportedPyrightVersions ?? [])].map((item) => {
                             return {
                                 label: item,
                                 checked: item === (props.settings.pyrightVersion ?? 'Latest'),
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignSelf: 'stretch',
         paddingVertical: 8,
-        paddingHorizontal: 16,
+        paddingHorizontal: 12,
     },
     divider: {
         height: 1,
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     headerText: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#666',
     },
     resetButtonContainer: {
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     selectedOptionText: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#333',
         flex: 1,
     },

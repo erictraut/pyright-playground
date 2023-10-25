@@ -23,6 +23,9 @@ const activeSessions = new Map<SessionId, Session>();
 // Maximum time a session can be idle before it is closed.
 const maxSessionLifetime = 1 * 60 * 1000; // 1 minute
 
+// Maximum number of pyright versions to return to the caller.
+const maxPyrightVersionCount = 50;
+
 // Active lifetime timer for harvesting old sessions.
 let lifetimeTimer: NodeJS.Timeout | undefined;
 
@@ -59,9 +62,20 @@ export function closeSession(sessionId: SessionId) {
 }
 
 export async function getPyrightVersions(): Promise<string[]> {
-    return packageJson('pyright', { allVersions: true })
+    return packageJson('pyright', { allVersions: true, fullMetadata: false })
         .then((response) => {
-            return Object.keys(response.versions);
+            let versions = Object.keys(response.versions);
+
+            // Filter out the really old versions (1.0.x).
+            versions = versions.filter((version) => !version.startsWith('1.0.'));
+
+            // Return the latest version first.
+            versions = versions.reverse();
+
+            // Limit the number of versions returned.
+            versions = versions.slice(0, maxPyrightVersionCount);
+
+            return versions;
         })
         .catch((err) => {
             throw new Error(`Failed to get versions of pyright: ${err}`);

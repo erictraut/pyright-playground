@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     },
     problemText: {
         marginBottom: 2,
-        fontSize: 12,
+        fontSize: 13,
         color: '#fff',
     },
     problemCountText: {
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     },
     diagnosticTextContainer: {},
     diagnosticText: {
-        fontSize: 12,
+        fontSize: 13,
         lineHeight: 16,
     },
     diagnosticSourceText: {

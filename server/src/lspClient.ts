@@ -34,7 +34,7 @@ interface DiagnosticRequest {
     callback: (diags: Diagnostic[]) => void;
 }
 
-const documentUri = 'untitled:untitled.py';
+const documentUri = 'file:///Untitled.py';
 
 export class LspClient {
     private _connection: MessageConnection;
@@ -154,11 +154,11 @@ export class LspClient {
 
         // The diagnostics will come back asynchronously, so
         // return a promise.
-        return new Promise<Diagnostic[]>((resolve, reject) => {
+        return new Promise<Diagnostic[]>(async (resolve, reject) => {
             let documentVersion = this._documentVersion;
 
             if (codeChanged) {
-                documentVersion = this.updateTextDocument(code);
+                documentVersion = await this.updateTextDocument(code);
             }
 
             // Queue a request for diagnostics.
@@ -180,7 +180,7 @@ export class LspClient {
     async getHoverInfo(code: string, position: Position): Promise<Hover | null> {
         let documentVersion = this._documentVersion;
         if (this._documentText !== code) {
-            documentVersion = this.updateTextDocument(code);
+            documentVersion = await this.updateTextDocument(code);
         }
 
         const hoverParams: HoverParams = {
@@ -201,29 +201,37 @@ export class LspClient {
     }
 
     // Sends a new version of the text document to the language server.
-    private updateTextDocument(code: string): number {
+    // It bumps the document version and returns the new version number.
+    private async updateTextDocument(code: string): Promise<number> {
         let documentVersion = ++this._documentVersion;
         this._documentText = code;
 
         console.log(`Updating text document to version ${documentVersion}`);
 
         // Send the updated text to the language server.
-        this._connection.sendNotification(
-            new NotificationType<DidChangeTextDocumentParams>('textDocument/didChange'),
-            {
-                textDocument: {
-                    uri: documentUri,
-                    version: documentVersion,
-                },
-                contentChanges: [
-                    {
-                        text: code,
+        return this._connection
+            .sendNotification(
+                new NotificationType<DidChangeTextDocumentParams>('textDocument/didChange'),
+                {
+                    textDocument: {
+                        uri: documentUri,
+                        version: documentVersion,
                     },
-                ],
-            }
-        );
-
-        return documentVersion;
+                    contentChanges: [
+                        {
+                            text: code,
+                        },
+                    ],
+                }
+            )
+            .then(() => {
+                console.log(`Successfully sent text document to language server`);
+                return documentVersion;
+            })
+            .catch((err) => {
+                console.log(`Error sending text document to language server: ${err}`);
+                throw err;
+            });
     }
 
     private static _logServerData(data: any) {

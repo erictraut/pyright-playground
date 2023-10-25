@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         paddingVertical: 4,
-        paddingHorizontal: 12,
+        paddingHorizontal: 16,
         alignItems: 'center',
         alignSelf: 'flex-start',
     },
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     checkboxText: {
         flex: -1,
         marginLeft: 8,
-        fontSize: 12,
+        fontSize: 13,
         color: '#333',
     },
     checkboxTextDisabled: {

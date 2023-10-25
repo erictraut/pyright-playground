@@ -14,14 +14,19 @@ import { MonacoEditor } from './MonacoEditor';
 import { ProblemsPanel } from './ProblemsPanel';
 import { RightPanel, RightPanelType } from './RightPanel';
 import { PlaygroundSettings } from './PlaygroundSettings';
+import { LspSession } from './LspSession';
 
 const lspClient = new LspClient();
 
 export interface AppState {
     gotInitialState: boolean;
     code: string;
-    settings: PlaygroundSettings;
     diagnostics: Diagnostic[];
+
+    settings: PlaygroundSettings;
+    latestPyrightVersion?: string;
+    supportedPyrightVersions?: string[];
+
     isRightPanelDisplayed: boolean;
     rightPanelType: RightPanelType;
 }
@@ -57,6 +62,26 @@ export default function App() {
             });
         }
     }, [appState.gotInitialState]);
+
+    // Request the latest version of pyright
+    useEffect(() => {
+        LspSession.getPyrightServiceStatus()
+            .then((status) => {
+                const pyrightVersions = status.pyrightVersions;
+
+                setAppState((prevState) => {
+                    return {
+                        ...prevState,
+                        latestPyrightVersion:
+                            pyrightVersions.length > 0 ? pyrightVersions[0] : undefined,
+                        supportedPyrightVersions: pyrightVersions,
+                    };
+                });
+            })
+            .catch((err) => {
+                // Ignore errors here.
+            });
+    });
 
     useEffect(() => {
         setStateToLocalStorage({ code: appState.code, settings: appState.settings });
@@ -128,6 +153,8 @@ export default function App() {
                         rightPanelType={appState.rightPanelType}
                         onShowRightPanel={onShowRightPanel}
                         settings={appState.settings}
+                        latestPyrightVersion={appState.latestPyrightVersion}
+                        supportedPyrightVersions={appState.supportedPyrightVersions}
                         onUpdateSettings={(settings: PlaygroundSettings) => {
                             setAppState((prevState) => {
                                 return { ...prevState, settings };
