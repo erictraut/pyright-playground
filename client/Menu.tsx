@@ -3,7 +3,7 @@
  * Provides rendering of (and interaction with) a menu of options.
  */
 
-import Icon from '@expo/vector-icons/SimpleLineIcons';
+import Icon from '@expo/vector-icons/AntDesign';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import {
@@ -30,10 +30,7 @@ export interface MenuRef {
     close: () => void;
 }
 
-export const Menu = forwardRef(function Menu(
-    { name, children, onOpen, isPopup }: MenuProps,
-    ref: ForwardedRef<MenuRef>
-) {
+export const Menu = forwardRef(function Menu(props: MenuProps, ref: ForwardedRef<MenuRef>) {
     const menuRef = useRef<RNMenu>(null);
 
     useImperativeHandle(ref, () => {
@@ -49,17 +46,17 @@ export const Menu = forwardRef(function Menu(
 
     return (
         <RNMenu
-            key={name}
-            name={name}
+            key={props.name}
+            name={props.name}
             ref={menuRef}
             renderer={renderers.Popover}
-            onOpen={onOpen}
+            onOpen={props.onOpen}
             rendererProps={{ anchorStyle: { width: 0, height: 0, backgroundColor: 'transparent' } }}
         >
             <MenuTrigger />
             <MenuOptions
                 customStyles={
-                    isPopup
+                    props.isPopup
                         ? {
                               optionsContainer: {
                                   backgroundColor: 'transparent',
@@ -69,7 +66,7 @@ export const Menu = forwardRef(function Menu(
                         : undefined
                 }
             >
-                <View style={styles.menuContainer}>{children}</View>
+                <View style={styles.menuContainer}>{props.children}</View>
             </MenuOptions>
         </RNMenu>
     );
@@ -77,39 +74,44 @@ export const Menu = forwardRef(function Menu(
 
 export interface MenuItemProps {
     label: string;
+    title?: string;
     iconName?: string;
     disabled?: boolean;
     focused?: boolean;
     onSelect?: () => void;
 }
 
-export function MenuItem({ label, disabled, onSelect, focused, iconName }: MenuItemProps) {
+export function MenuItem(props: MenuItemProps) {
     const [hoverRef, isHovered] = useHover();
 
-    let optionalIcon: JSX.Element | undefined;
-    if (iconName) {
-        optionalIcon = (
-            <View style={styles.iconContainer}>
-                <Icon name={iconName as any} size={14} color={panelItemIconColor} />
-            </View>
-        );
-    }
-
     return (
-        <MenuOption onSelect={onSelect} customStyles={{ optionWrapper: { padding: 0 } }}>
-            <View
-                style={[
-                    styles.container,
-                    focused || isHovered ? styles.focused : undefined,
-                    disabled ? styles.disabled : undefined,
-                ]}
-                ref={hoverRef}
-            >
-                {optionalIcon}
-                <Text style={styles.labelText} numberOfLines={1}>
-                    {label}
-                </Text>
-            </View>
+        <MenuOption
+            onSelect={props.onSelect}
+            customStyles={{ optionWrapper: { padding: 0 } }}
+            disabled={props.disabled}
+            disableTouchable={props.disabled}
+        >
+            <div title={props.title}>
+                <View
+                    style={[
+                        styles.container,
+                        props.focused || isHovered ? styles.focused : undefined,
+                        props.disabled ? styles.disabled : undefined,
+                    ]}
+                    ref={hoverRef}
+                >
+                    <View style={styles.iconContainer}>
+                        <Icon
+                            name={props.iconName as any}
+                            size={14}
+                            color={props.iconName ? panelItemIconColor : 'transparent'}
+                        />
+                    </View>
+                    <Text style={styles.labelText} numberOfLines={1}>
+                        {props.label}
+                    </Text>
+                </View>
+            </div>
         </MenuOption>
     );
 }
@@ -127,6 +129,7 @@ const styles = StyleSheet.create({
         opacity: 0.5,
     },
     iconContainer: {
+        minWidth: 14,
         marginLeft: 2,
         marginRight: 4,
     },

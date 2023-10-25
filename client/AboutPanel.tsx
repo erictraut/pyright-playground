@@ -52,7 +52,6 @@ const styles = StyleSheet.create({
     },
     aboutTextLink: {
         fontSize: 14,
-        color: 'blue',
         lineHeight: 24,
     },
     aboutText: {

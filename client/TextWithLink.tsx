@@ -4,22 +4,34 @@
  */
 
 import { Linking, StyleProp, StyleSheet, Text, TextStyle } from 'react-native';
+import { useHover } from './HoverHook';
 
 interface TextWithLinkProps extends React.PropsWithChildren {
     style?: StyleProp<TextStyle>;
     url: string;
 }
 
-export default function TextWithLink({ children, style, url }: TextWithLinkProps) {
+export default function TextWithLink(props: TextWithLinkProps) {
+    const [hoverRef, isHovered] = useHover();
+
     return (
-        <Text style={style ?? styles.default} onPress={() => Linking.openURL(url)}>
-            {children}
+        <Text
+            ref={hoverRef}
+            style={[styles.default, props.style, isHovered ? styles.defaultHover : undefined]}
+            onPress={() => {
+                Linking.openURL(props.url);
+            }}
+        >
+            {props.children}
         </Text>
     );
 }
 
 const styles = StyleSheet.create({
     default: {
-        color: 'blue',
+        color: '#669',
+    },
+    defaultHover: {
+        color: '#336',
     },
 });

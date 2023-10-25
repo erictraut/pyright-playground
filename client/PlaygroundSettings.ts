@@ -9,5 +9,5 @@ export interface PlaygroundSettings {
     pyrightVersion?: string;
     pythonVersion?: string;
     pythonPlatform?: string;
-    language?: string;
+    locale?: string;
 }

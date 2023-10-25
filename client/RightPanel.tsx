@@ -23,7 +23,7 @@ export interface RightPanelProps {
     settings: PlaygroundSettings;
     onUpdateSettings: (settings: PlaygroundSettings) => void;
 }
-const rightPanelWidth = 350;
+const rightPanelWidth = 300;
 
 export function RightPanel(props: RightPanelProps) {
     let panelContents: JSX.Element | undefined;
