@@ -9,6 +9,7 @@ import { useHover } from './HoverHook';
 interface TextWithLinkProps extends React.PropsWithChildren {
     style?: StyleProp<TextStyle>;
     url: string;
+    useSameWindow?: boolean;
 }
 
 export default function TextWithLink(props: TextWithLinkProps) {
@@ -19,7 +20,11 @@ export default function TextWithLink(props: TextWithLinkProps) {
             ref={hoverRef}
             style={[styles.default, props.style, isHovered ? styles.defaultHover : undefined]}
             onPress={() => {
-                Linking.openURL(props.url);
+                if (props.useSameWindow) {
+                    window.location.replace(props.url);
+                } else {
+                    Linking.openURL(props.url);
+                }
             }}
         >
             {props.children}
