@@ -32,7 +32,7 @@ import {
 import { SessionOptions } from './session';
 
 interface DiagnosticRequest {
-    callback: (diags: Diagnostic[]) => void;
+    callback: (diags: Diagnostic[], error?: Error) => void;
 }
 
 const documentUri = 'file:///Untitled.py';
@@ -176,7 +176,12 @@ export class LspClient {
             }
 
             requestList.push({
-                callback: (diagnostics) => {
+                callback: (diagnostics, err) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+
                     console.log(`Diagnostic callback ${JSON.stringify(diagnostics)}}`);
                     resolve(diagnostics);
                 },
@@ -239,6 +244,17 @@ export class LspClient {
                 console.log(`Error sending text document to language server: ${err}`);
                 throw err;
             });
+    }
+
+    // Cancels all pending requests.
+    cancelRequests() {
+        this._pendingDiagRequests.forEach((requestList) => {
+            requestList.forEach((request) => {
+                request.callback([], new Error('Request canceled'));
+            });
+        });
+
+        this._pendingDiagRequests.clear();
     }
 
     private static _logServerData(data: any) {

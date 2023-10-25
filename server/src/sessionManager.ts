@@ -50,19 +50,23 @@ export async function createNewSession(
     });
 }
 
+// Attempts to close the session and cleans up its resources. It
+// silently fails if it cannot.
 export function closeSession(sessionId: SessionId) {
     const session = activeSessions.get(sessionId);
-    if (session) {
-        console.log(`Request to close session ${sessionId}`);
-
-        // If the process exists, attempt to kill it.
-        if (session.langServerProcess) {
-            session.langServerProcess.kill();
-        }
-
-        session.langServerProcess = undefined;
-        activeSessions.delete(sessionId);
+    if (!session) {
+        return;
     }
+
+    session.langClient?.cancelRequests();
+
+    // If the process exists, attempt to kill it.
+    if (session.langServerProcess) {
+        session.langServerProcess.kill();
+    }
+
+    session.langServerProcess = undefined;
+    activeSessions.delete(sessionId);
 }
 
 export async function getPyrightVersions(): Promise<string[]> {
@@ -181,14 +185,6 @@ export function startSession(
             closeSession(sessionId);
         });
     });
-}
-
-function handleDataLoggedByLanguageServer(data: any) {
-    console.log(
-        `Logged from pyright language server: ${
-            typeof data === 'string' ? data : data.toString('utf8')
-        }`
-    );
 }
 
 async function installPyright(requestedVersion: string | undefined): Promise<InstallPyrightInfo> {

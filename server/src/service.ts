@@ -21,6 +21,7 @@ export function getStatus(req: Request, res: Response) {
             res.status(200).json({ pyrightVersions });
         })
         .catch((err) => {
+            console.error(`getStatus returning a 500: ${err}`);
             res.status(500).json({ message: err || 'An unexpected error occurred' });
         });
 }
@@ -37,6 +38,7 @@ export function createSession(req: Request, res: Response) {
             res.status(200).json({ sessionId });
         })
         .catch((err) => {
+            console.error(`createNewSession returning a 500: ${err}`);
             res.status(500).json({ message: err || 'An unexpected error occurred' });
         });
 }
@@ -48,7 +50,7 @@ export function closeSession(req: Request, res: Response) {
     }
 
     SessionManager.closeSession(session.id);
-    res.status(200);
+    res.status(200).json({});
 }
 
 // Given some Python code and associated options, returns
@@ -71,6 +73,7 @@ export function getDiagnostics(req: Request, res: Response) {
             res.status(200).json({ diagnostics });
         })
         .catch((err) => {
+            console.error(`getDiagnostics returning a 500: ${err}`);
             res.status(500).json({ message: err || 'An unexpected error occurred' });
         });
 }
@@ -95,6 +98,7 @@ export function getHoverInfo(req: Request, res: Response) {
             res.status(200).json({ hover });
         })
         .catch((err) => {
+            console.error(`getHoverInfo returning a 500: ${err}`);
             res.status(500).json({ message: err || 'An unexpected error occurred' });
         });
 }
@@ -139,7 +143,7 @@ function validateCodeWithOptions(
     res: Response,
     options?: string[]
 ): CodeWithOptions | undefined {
-    let foundError = false;
+    let reportedError = false;
 
     if (!req.body || typeof req.body !== 'object') {
         res.status(400).json({ message: 'Invalid request body' });
@@ -163,7 +167,7 @@ function validateCodeWithOptions(
                 typeof position.character !== 'number'
             ) {
                 res.status(400).json({ message: 'Invalid position' });
-                foundError = true;
+                reportedError = true;
             } else {
                 response.position = {
                     line: position.line,
@@ -173,7 +177,7 @@ function validateCodeWithOptions(
         }
     });
 
-    return foundError ? undefined : response;
+    return reportedError ? undefined : response;
 }
 
 function validateSession(req: Request, res: Response): Session | undefined {
