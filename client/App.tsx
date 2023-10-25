@@ -33,6 +33,7 @@ export interface AppState {
     rightPanelType: RightPanelType;
 
     isProblemsPanelDisplayed: boolean;
+    isWaitingForResponse: boolean;
 }
 
 export default function App() {
@@ -48,6 +49,7 @@ export default function App() {
         isRightPanelDisplayed: true,
         rightPanelType: RightPanelType.About,
         isProblemsPanelDisplayed: false,
+        isWaitingForResponse: false,
     });
 
     useEffect(() => {
@@ -136,6 +138,14 @@ export default function App() {
                 };
             });
         },
+        onWaitingForDiagnostics: (isWaiting) => {
+            setAppState((prevState) => {
+                return {
+                    ...prevState,
+                    isWaitingForResponse: isWaiting,
+                };
+            });
+        },
     });
 
     function onShowRightPanel(rightPanelType?: RightPanelType) {
@@ -193,6 +203,7 @@ export default function App() {
                         }
                     }}
                     expandProblems={appState.isProblemsPanelDisplayed}
+                    displayActivityIndicator={appState.isWaitingForResponse}
                 />
             </View>
         </MenuProvider>

@@ -13,6 +13,7 @@ import { PlaygroundSettings } from './PlaygroundSettings';
 const diagnosticDelayInMs = 500;
 
 export interface LspClientNotifications {
+    onWaitingForDiagnostics?: (isWaiting: boolean) => void;
     onDiagnostics?: (diag: Diagnostic[]) => void;
     onError?: (message: string) => void;
 }
@@ -67,16 +68,29 @@ export class LspClient {
 
     private _requestDiagnostics() {
         let docVersion = this._docVersion;
+
+        if (this._notifications.onWaitingForDiagnostics) {
+            this._notifications.onWaitingForDiagnostics(true);
+        }
+
         this._lspSession
             .getDiagnostics(this._docContent)
             .then((diagnostics) => {
                 if (this._docVersion === docVersion) {
+                    if (this._notifications.onWaitingForDiagnostics) {
+                        this._notifications.onWaitingForDiagnostics(false);
+                    }
+
                     if (this._notifications.onDiagnostics) {
                         this._notifications.onDiagnostics(diagnostics);
                     }
                 }
             })
             .catch((err) => {
+                if (this._notifications.onWaitingForDiagnostics) {
+                    this._notifications.onWaitingForDiagnostics(false);
+                }
+
                 if (this._notifications.onError) {
                     this._notifications.onError(err.message);
                 }

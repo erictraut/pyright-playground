@@ -4,7 +4,16 @@
  */
 
 import Icon from '@expo/vector-icons/AntDesign';
-import { Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+    ActivityIndicator,
+    Animated,
+    Easing,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+} from 'react-native';
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver-types';
 import { useHover } from './HoverHook';
 import { useEffect, useRef } from 'react';
@@ -13,6 +22,7 @@ export interface ProblemsPanelProps {
     diagnostics: Diagnostic[];
     onSelectRange: (range: Range) => void;
     expandProblems: boolean;
+    displayActivityIndicator: boolean;
 }
 
 const problemsPanelHeight = 200;
@@ -54,6 +64,14 @@ export function ProblemsPanel(props: ProblemsPanelProps) {
                                     {filteredDiagnostics.length.toString()}
                                 </Text>
                             </View>
+                            {props.displayActivityIndicator ? (
+                                <View style={styles.activityContainer}>
+                                    <Text style={styles.waitingText} selectable={false}>
+                                        Waiting for server
+                                    </Text>
+                                    <ActivityIndicator size={12} color="#fff" />
+                                </View>
+                            ) : undefined}
                         </View>
                     ) : undefined}
                 </View>
@@ -146,6 +164,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     headerContents: {
+        flex: 1,
         flexDirection: 'row',
         alignSelf: 'stretch',
         alignItems: 'center',
@@ -167,6 +186,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    activityContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        marginRight: 4,
+        justifyContent: 'flex-end',
+    },
+    waitingText: {
+        fontSize: 12,
+        color: '#fff',
+        marginRight: 8,
     },
     diagnosticContainer: {
         padding: 4,
