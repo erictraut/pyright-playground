@@ -43,7 +43,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
             <SettingsHeader headerText={'CONFIGURATION OPTIONS'} />
             <SettingsCheckbox
                 key={'strict'}
-                label={'Strict Mode'}
+                label={'Strict'}
                 title={'Enable set of strict type checking options'}
                 disabled={false}
                 value={!!props.settings.strictMode}
@@ -76,6 +76,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
                         onSelect={(item) => {
                             props.onUpdateSettings(toggleConfigOption(props.settings, item.label));
                         }}
+                        includeSearchBox={true}
+                        fixedSize={{ width: 300, height: 400 }}
                     />
                 </Menu>
             </View>

@@ -36,11 +36,7 @@ export function SettingsCheckbox(props: SettingsCheckboxProps) {
                 ]}
             >
                 {props.value ? (
-                    <Icon
-                        name={'check'}
-                        size={14}
-                        color={props.disabled ? '#aaa' : isHovered ? '#000' : '#333'}
-                    />
+                    <Icon name={'check'} size={12} color={props.disabled ? '#aaa' : '#333'} />
                 ) : undefined}
             </View>
             <div title={props.title}>
@@ -68,8 +64,8 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
     },
     checkbox: {
-        width: 15,
-        height: 15,
+        width: 14,
+        height: 14,
         borderColor: '#333',
         borderWidth: 1,
         borderStyle: 'solid',
@@ -78,7 +74,7 @@ const styles = StyleSheet.create({
         borderColor: '#aaa',
     },
     checkboxHover: {
-        borderColor: '#000',
+        backgroundColor: '#eee',
     },
     checkboxText: {
         flex: -1,

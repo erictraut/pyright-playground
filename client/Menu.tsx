@@ -74,6 +74,7 @@ export const Menu = forwardRef(function Menu(props: MenuProps, ref: ForwardedRef
 
 export interface MenuItemProps {
     label: string;
+    labelFilterText?: string;
     title?: string;
     iconName?: string;
     disabled?: boolean;
@@ -83,6 +84,39 @@ export interface MenuItemProps {
 
 export function MenuItem(props: MenuItemProps) {
     const [hoverRef, isHovered] = useHover();
+
+    // If there's a label filter, see if we can find it in the label.
+    let filterOffset = -1;
+    if (props.labelFilterText) {
+        filterOffset = props.label.toLowerCase().indexOf(props.labelFilterText);
+    }
+
+    let labelItem: JSX.Element | undefined;
+
+    if (filterOffset < 0) {
+        labelItem = (
+            <Text style={[styles.labelText, styles.labelText]} numberOfLines={1} selectable={false}>
+                {props.label}
+            </Text>
+        );
+    } else {
+        const beforeText = props.label.substring(0, filterOffset);
+        const middleText = props.label.substring(
+            filterOffset,
+            filterOffset + props.labelFilterText.length
+        );
+        const afterText = props.label.substring(filterOffset + props.labelFilterText.length);
+
+        labelItem = (
+            <Text style={styles.labelText} numberOfLines={1} selectable={false}>
+                <Text selectable={false}>{beforeText}</Text>
+                <Text style={styles.labelFiltered} selectable={false}>
+                    {middleText}
+                </Text>
+                <Text selectable={false}>{afterText}</Text>
+            </Text>
+        );
+    }
 
     return (
         <MenuOption
@@ -107,9 +141,7 @@ export function MenuItem(props: MenuItemProps) {
                             color={props.iconName ? panelItemIconColor : 'transparent'}
                         />
                     </View>
-                    <Text style={styles.labelText} numberOfLines={1}>
-                        {props.label}
-                    </Text>
+                    {labelItem}
                 </View>
             </div>
         </MenuOption>
@@ -134,15 +166,19 @@ const styles = StyleSheet.create({
         marginLeft: 2,
         marginRight: 4,
     },
-    labelText: {
-        padding: 4,
-        fontSize: 13,
-        fontColor: panelTextColor,
-    },
     focused: {
         backgroundColor: focusedMenuItemBackgroundColor,
     },
     menuContainer: {
         margin: 4,
+    },
+    labelText: {
+        fontSize: 13,
+        padding: 4,
+        color: panelTextColor,
+    },
+    labelFiltered: {
+        backgroundColor: '#ccc',
+        color: '#000',
     },
 });
