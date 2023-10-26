@@ -337,12 +337,6 @@ function convertCompletionItem(
         });
     }
 
-    console.log('Pre-conversion');
-    console.log(JSON.stringify(item, undefined, 4));
-
-    console.log('Post-conversion');
-    console.log(JSON.stringify(converted, undefined, 4));
-
     // Stash a few additional pieces of information.
     (converted as any).__original = item;
     if (model) {
