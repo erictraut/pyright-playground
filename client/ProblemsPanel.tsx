@@ -206,6 +206,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#eee',
     },
     diagnosticIconContainer: {
+        marginTop: 1,
         marginRight: 8,
     },
     diagnosticTextContainer: {},

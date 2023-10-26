@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     divider: {
         height: 1,
         borderTopWidth: 1,
-        borderColor: '#ddf',
+        borderColor: '#ddd',
         borderStyle: 'solid',
         marginVertical: 8,
     },

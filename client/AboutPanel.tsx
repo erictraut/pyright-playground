@@ -76,7 +76,7 @@ export function AboutPanel() {
 
             <View style={styles.divider} />
             <Text style={styles.headerText} selectable={false}>
-                {'ABOUT PYRIGHT'}
+                {'PYRIGHT'}
             </Text>
             <Text style={styles.aboutText} selectable={false}>
                 {'Pyright is an open-source standards-based static type checker for Python.'}
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     divider: {
         height: 1,
         borderTopWidth: 1,
-        borderColor: '#ddf',
+        borderColor: '#ddd',
         borderStyle: 'solid',
         marginVertical: 12,
     },

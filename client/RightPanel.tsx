@@ -34,7 +34,7 @@ export function RightPanel(props: RightPanelProps) {
     switch (props.rightPanelType) {
         case RightPanelType.About:
             panelContents = <AboutPanel />;
-            headerTitle = 'Pyright Playground';
+            headerTitle = 'About Pyright Playground';
             break;
 
         case RightPanelType.Settings:
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderBottomWidth: 1,
         borderStyle: 'solid',
-        borderColor: '#ddf',
+        borderColor: '#ddd',
         paddingHorizontal: 8,
     },
     headerTitleText: {
