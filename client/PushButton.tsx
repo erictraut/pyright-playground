@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
         color: '#ccc',
     },
     baseText: {
-        //fontWeight: '600',
         color: '#333',
+        fontSize: 13,
     },
 });
