@@ -4,7 +4,13 @@
  * talks to the remote language server via an LSP session.
  */
 
-import { Diagnostic, Position, SignatureHelp, WorkspaceEdit } from 'vscode-languageserver-types';
+import {
+    CompletionItem,
+    CompletionList,
+    Diagnostic,
+    Position,
+    SignatureHelp,
+} from 'vscode-languageserver-types';
 import { HoverInfo, LspSession } from './LspSession';
 import { PlaygroundSettings } from './PlaygroundSettings';
 
@@ -52,6 +58,19 @@ export class LspClient {
         position: Position
     ): Promise<SignatureHelp | undefined> {
         return this._lspSession.getSignatureHelpForPosition(code, position);
+    }
+
+    async getCompletionForPosition(
+        code: string,
+        position: Position
+    ): Promise<CompletionList | undefined> {
+        return this._lspSession.getCompletionForPosition(code, position);
+    }
+
+    async resolveCompletionItem(
+        completionItem: CompletionItem
+    ): Promise<CompletionItem | undefined> {
+        return this._lspSession.resolveCompletionItem(completionItem);
     }
 
     private _restartDiagnosticsTimer() {

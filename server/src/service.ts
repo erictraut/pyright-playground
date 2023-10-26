@@ -104,8 +104,6 @@ export function getHoverInfo(req: Request, res: Response) {
         });
 }
 
-// Given some Python code and a position within that code,
-// returns signature help information.
 export function getSignatureHelp(req: Request, res: Response) {
     const session = validateSession(req, res);
     const langClient = session?.langClient;
@@ -124,7 +122,59 @@ export function getSignatureHelp(req: Request, res: Response) {
             res.status(200).json({ signatureHelp });
         })
         .catch((err) => {
-            logger.error(`getHoverInfo returning a 500: ${err}`);
+            logger.error(`getSignatureHelp returning a 500: ${err}`);
+            res.status(500).json({ message: err || 'An unexpected error occurred' });
+        });
+}
+
+export function getCompletion(req: Request, res: Response) {
+    const session = validateSession(req, res);
+    const langClient = session?.langClient;
+    if (!langClient) {
+        return;
+    }
+
+    const codeWithOptions = validateCodeWithOptions(req, res, ['position']);
+    if (!codeWithOptions) {
+        return;
+    }
+
+    langClient
+        .getCompletion(codeWithOptions.code, codeWithOptions.position!)
+        .then((completionList) => {
+            res.status(200).json({ completionList });
+        })
+        .catch((err) => {
+            logger.error(`getCompletion returning a 500: ${err}`);
+            res.status(500).json({ message: err || 'An unexpected error occurred' });
+        });
+}
+
+export function resolveCompletion(req: Request, res: Response) {
+    const session = validateSession(req, res);
+    const langClient = session?.langClient;
+    if (!langClient) {
+        return;
+    }
+
+    if (!req.body || typeof req.body !== 'object') {
+        res.status(400).json({ message: 'Invalid request body' });
+        return;
+    }
+
+    const completionItem = req.body.completionItem;
+    if (typeof completionItem !== 'object') {
+        res.status(400).json({ message: 'Invalid completionItem' });
+        return;
+    }
+
+    langClient
+        .resolveCompletion(completionItem)
+        .then((completionItem) => {
+            res.status(200).json({ completionItem });
+        })
+        .catch((err) => {
+            logger.error(`resolveCompletion returning a 500: ${err}`);
             res.status(500).json({ message: err || 'An unexpected error occurred' });
         });
 }

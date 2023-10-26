@@ -14,6 +14,11 @@ import {
     createMessageConnection,
 } from 'vscode-jsonrpc/node';
 import {
+    CompletionItem,
+    CompletionList,
+    CompletionParams,
+    CompletionRequest,
+    CompletionResolveRequest,
     ConfigurationParams,
     Diagnostic,
     DiagnosticTag,
@@ -230,6 +235,43 @@ export class LspClient {
 
         const result = await this._connection
             .sendRequest(SignatureHelpRequest.type, params)
+            .catch((err) => {
+                // Don't return an error. Just return null (no info).
+                return null;
+            });
+
+        return result;
+    }
+
+    async getCompletion(
+        code: string,
+        position: Position
+    ): Promise<CompletionList | CompletionItem[] | null> {
+        let documentVersion = this._documentVersion;
+        if (this._documentText !== code) {
+            documentVersion = await this.updateTextDocument(code);
+        }
+
+        const params: CompletionParams = {
+            textDocument: {
+                uri: documentUri,
+            },
+            position,
+        };
+
+        const result = await this._connection
+            .sendRequest(CompletionRequest.type, params)
+            .catch((err) => {
+                // Don't return an error. Just return null (no info).
+                return null;
+            });
+
+        return result;
+    }
+
+    async resolveCompletion(completionItem: CompletionItem): Promise<CompletionItem | null> {
+        const result = await this._connection
+            .sendRequest(CompletionResolveRequest.type, completionItem)
             .catch((err) => {
                 // Don't return an error. Just return null (no info).
                 return null;

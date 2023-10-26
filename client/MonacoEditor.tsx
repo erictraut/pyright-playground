@@ -8,7 +8,14 @@ import Editor, { loader } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver-types';
+import {
+    CompletionItem,
+    CompletionItemKind,
+    Diagnostic,
+    DiagnosticSeverity,
+    InsertReplaceEdit,
+    Range,
+} from 'vscode-languageserver-types';
 import { LspClient } from './LspClient';
 
 loader
@@ -20,6 +27,11 @@ loader
         monaco.languages.registerSignatureHelpProvider('python', {
             provideSignatureHelp: handleSignatureHelpRequest,
             signatureHelpTriggerCharacters: ['(', ','],
+        });
+        monaco.languages.registerCompletionItemProvider('python', {
+            provideCompletionItems: handleProvideCompletionRequest,
+            resolveCompletionItem: handleResolveCompletionRequest,
+            triggerCharacters: ['.', '[', '"', "'"],
         });
     })
     .catch((error) => console.error('An error occurred during initialization of Monaco: ', error));
@@ -235,6 +247,132 @@ async function handleSignatureHelpRequest(
         };
     } catch (err) {
         return null;
+    }
+}
+
+async function handleProvideCompletionRequest(
+    model: monaco.editor.ITextModel,
+    position: monaco.Position
+): Promise<monaco.languages.CompletionList> {
+    const lspClient = getLspClientForModel(model);
+    if (!lspClient) {
+        return null;
+    }
+
+    try {
+        const completionInfo = await lspClient.getCompletionForPosition(model.getValue(), {
+            line: position.lineNumber - 1,
+            character: position.column - 1,
+        });
+
+        return {
+            suggestions: completionInfo.items.map((item) => {
+                return convertCompletionItem(item, model);
+            }),
+            incomplete: completionInfo.isIncomplete,
+            dispose: () => {},
+        };
+    } catch (err) {
+        return null;
+    }
+}
+
+async function handleResolveCompletionRequest(
+    item: monaco.languages.CompletionItem
+): Promise<monaco.languages.CompletionItem> {
+    const model = (item as any).model as monaco.editor.ITextModel | undefined;
+    const original = (item as any).__original as CompletionItem | undefined;
+    if (!model || !original) {
+        return null;
+    }
+
+    const lspClient = getLspClientForModel(model);
+    if (!lspClient) {
+        return null;
+    }
+
+    try {
+        const result = await lspClient.resolveCompletionItem(original);
+        return convertCompletionItem(result);
+    } catch (err) {
+        return null;
+    }
+}
+
+function convertCompletionItem(
+    item: CompletionItem,
+    model?: monaco.editor.ITextModel
+): monaco.languages.CompletionItem {
+    const converted: monaco.languages.CompletionItem = {
+        label: item.label,
+        kind: convertCompletionItemKind(item.kind),
+        tags: item.tags,
+        detail: item.detail,
+        documentation: item.documentation,
+        sortText: item.sortText,
+        filterText: item.filterText,
+        preselect: item.preselect,
+        insertText: item.label,
+        range: undefined,
+    };
+
+    if (item.textEdit) {
+        converted.insertText = item.textEdit.newText;
+        if (InsertReplaceEdit.is(item.textEdit)) {
+            converted.range = {
+                insert: convertRange(item.textEdit.insert),
+                replace: convertRange(item.textEdit.replace),
+            };
+        } else {
+            converted.range = convertRange(item.textEdit.range);
+        }
+    }
+
+    if (item.additionalTextEdits) {
+        converted.additionalTextEdits = item.additionalTextEdits.map((edit) => {
+            return {
+                range: convertRange(edit.range),
+                text: edit.newText,
+            };
+        });
+    }
+
+    console.log('Pre-conversion');
+    console.log(JSON.stringify(item, undefined, 4));
+
+    console.log('Post-conversion');
+    console.log(JSON.stringify(converted, undefined, 4));
+
+    // Stash a few additional pieces of information.
+    (converted as any).__original = item;
+    if (model) {
+        (converted as any).model = model;
+    }
+
+    return converted;
+}
+
+function convertCompletionItemKind(
+    itemKind: CompletionItemKind
+): monaco.languages.CompletionItemKind {
+    switch (itemKind) {
+        case CompletionItemKind.Constant:
+            return monaco.languages.CompletionItemKind.Constant;
+
+        case CompletionItemKind.Variable:
+            return monaco.languages.CompletionItemKind.Variable;
+
+        case CompletionItemKind.Function:
+            return monaco.languages.CompletionItemKind.Function;
+
+        case CompletionItemKind.Field:
+            return monaco.languages.CompletionItemKind.Field;
+
+        case CompletionItemKind.Keyword:
+            return monaco.languages.CompletionItemKind.Keyword;
+
+        default:
+            return monaco.languages.CompletionItemKind.Reference;
     }
 }
 
