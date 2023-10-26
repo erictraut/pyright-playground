@@ -37,9 +37,7 @@ export function CheckmarkMenu(props: CheckmarkMenuProps) {
     });
 
     return (
-        <ScrollView
-            style={[styles.container, props.fixedSize ? { ...props.fixedSize } : undefined]}
-        >
+        <View style={styles.contentContainer}>
             {props.includeSearchBox ? (
                 <View style={styles.searchBoxContainer}>
                     <TextInput
@@ -56,20 +54,25 @@ export function CheckmarkMenu(props: CheckmarkMenuProps) {
                     />
                 </View>
             ) : undefined}
-            {filteredItems.map((item, index) => {
-                return (
-                    <MenuItem
-                        key={index}
-                        iconName={item.checked ? 'check' : undefined}
-                        label={item.label}
-                        labelFilterText={searchFilter}
-                        onSelect={() => props.onSelect(item, index)}
-                        title={item.title}
-                        disabled={item.disabled}
-                    />
-                );
-            })}
-        </ScrollView>
+
+            <ScrollView
+                style={[styles.container, props.fixedSize ? { ...props.fixedSize } : undefined]}
+            >
+                {filteredItems.map((item, index) => {
+                    return (
+                        <MenuItem
+                            key={index}
+                            iconName={item.checked ? 'check' : undefined}
+                            label={item.label}
+                            labelFilterText={searchFilter}
+                            onSelect={() => props.onSelect(item, index)}
+                            title={item.title}
+                            disabled={item.disabled}
+                        />
+                    );
+                })}
+            </ScrollView>
+        </View>
     );
 }
 
@@ -79,6 +82,7 @@ const styles = StyleSheet.create({
         minWidth: 100,
         maxHeight: 300,
     },
+    contentContainer: {},
     searchBoxContainer: {
         paddingHorizontal: 4,
         paddingTop: 4,
