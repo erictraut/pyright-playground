@@ -28,6 +28,13 @@ const maxSessionLifetime = 1 * 60 * 1000; // 1 minute
 // Maximum number of pyright versions to return to the caller.
 const maxPyrightVersionCount = 50;
 
+// If the caller doesn't specify the pythonVersion or pythonPlatform,
+// default to these. Otherwise the language server will pick these
+// based on whatever version of Python happens to be installed in
+// the container it's running in.
+const defaultPythonVersion = '3.12';
+const defaultPythonPlatform = 'All';
+
 // Active lifetime timer for harvesting old sessions.
 let lifetimeTimer: NodeJS.Timeout | undefined;
 
@@ -247,10 +254,14 @@ function synthesizePyrightConfigFile(tempDirPath: string, sessionOptions?: Sessi
 
     if (sessionOptions?.pythonVersion) {
         config.pythonVersion = sessionOptions.pythonVersion;
+    } else {
+        config.pythonVersion = defaultPythonVersion;
     }
 
     if (sessionOptions?.pythonPlatform) {
         config.pythonPlatform = sessionOptions.pythonPlatform;
+    } else {
+        config.pythonPlatform = defaultPythonPlatform;
     }
 
     if (sessionOptions?.typeCheckingMode === 'strict') {
