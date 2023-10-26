@@ -52,6 +52,11 @@ const options: monaco.editor.IStandaloneEditorConstructionOptions = {
     showUnused: true,
     wordBasedSuggestions: false,
     overviewRulerLanes: 0,
+    renderWhitespace: 'none',
+    guides: {
+        indentation: false,
+    },
+    renderLineHighlight: 'none',
 };
 
 interface RegisteredModel {
