@@ -3,18 +3,32 @@
  * Main entry point for the app server.
  */
 
+import * as appInsight from 'applicationinsights';
 import bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
 import express from 'express';
 import * as path from 'path';
 import routes from './routes';
-import { logger, configureRemoteLogging } from './logging';
+import { logger } from './logging';
 
 try {
     // Load environment variables from ".env" file.
     dotenv.config();
 
-    configureRemoteLogging(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING);
+    const appInsightsKey = process.env.APPLICATIONINSIGHTS_CONNECTION_STRING;
+    if (appInsightsKey) {
+        appInsight
+            .setup(appInsightsKey)
+            .setAutoDependencyCorrelation(true)
+            .setAutoCollectRequests(true)
+            .setAutoCollectPerformance(true, true)
+            .setAutoCollectExceptions(true)
+            .setAutoCollectDependencies(true)
+            .setAutoCollectConsole(true, true)
+            .setSendLiveMetrics(false)
+            .setDistributedTracingMode(appInsight.DistributedTracingModes.AI)
+            .start();
+    }
 
     startService();
 } catch (err) {
