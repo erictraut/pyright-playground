@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
         borderColor: '#aaa',
     },
     checkboxHover: {
-        backgroundColor: '#eee',
+        backgroundColor: '#fff',
     },
     checkboxText: {
         flex: -1,

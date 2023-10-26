@@ -24,14 +24,14 @@ export default function PushButton(props: PushButtonProps) {
         styles.defaultBackground,
         props.backgroundStyle,
     ];
-    let effectiveTextStyle: (TextStyle | undefined)[] = [styles.defaultText, props.textStyle];
+    let effectiveTextStyle: (TextStyle | undefined)[] = [props.textStyle];
 
     if (props.disabled) {
         effectiveBackgroundStyle.push(styles.disabledBackground);
         effectiveTextStyle.push(styles.disabledText);
     } else if (isHovered) {
         effectiveBackgroundStyle.push(styles.defaultHoverBackground, props.hoverBackgroundStyle);
-        effectiveTextStyle.push(styles.defaultHoverText, props.hoverTextStyle);
+        effectiveTextStyle.push(props.hoverTextStyle);
     }
 
     return (
@@ -59,24 +59,25 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingHorizontal: 12,
         paddingVertical: 6,
-        borderRadius: 8,
-    },
-    defaultHoverBackground: {
-        backgroundColor: '#336',
+        borderRadius: 4,
+        borderWidth: 1,
+        borderColor: '#669',
     },
     defaultBackground: {
-        backgroundColor: '#669',
+        backgroundColor: '#f8f8ff',
+    },
+    defaultHoverBackground: {
+        backgroundColor: '#fff',
     },
     disabledBackground: {
-        backgroundColor: '#C0C0D3',
+        backgroundColor: 'transparent',
+        borderColor: '#ccc',
     },
     disabledText: {
-        color: '#eee',
+        color: '#ccc',
     },
     baseText: {
-        fontWeight: '600',
-        color: 'white',
+        //fontWeight: '600',
+        color: '#333',
     },
-    defaultHoverText: {},
-    defaultText: {},
 });

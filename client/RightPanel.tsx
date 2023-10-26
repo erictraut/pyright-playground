@@ -25,7 +25,7 @@ export interface RightPanelProps {
     latestPyrightVersion?: string;
     supportedPyrightVersions?: string[];
 }
-const rightPanelWidth = 350;
+const rightPanelWidth = 320;
 
 export function RightPanel(props: RightPanelProps) {
     let panelContents: JSX.Element | undefined;

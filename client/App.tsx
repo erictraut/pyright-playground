@@ -214,6 +214,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
+        overflow: 'hidden',
     },
     middlePanelContainer: {
         flex: 1,
