@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderBottomWidth: 1,
         borderStyle: 'solid',
-        borderColor: '#ddd',
+        borderColor: '#ddf',
         paddingHorizontal: 8,
     },
     headerTitleText: {

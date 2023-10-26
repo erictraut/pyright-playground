@@ -62,7 +62,7 @@ export const supportedLocales: LocalInfo[] = [
         code: 'es',
     },
     {
-        displayName: 'Portuguese (Brazil)',
+        displayName: 'Portuguese (Brazil) - português',
         code: 'pt-br',
     },
     {

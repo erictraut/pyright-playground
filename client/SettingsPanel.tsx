@@ -78,6 +78,9 @@ export function SettingsPanel(props: SettingsPanelProps) {
                         }}
                         includeSearchBox={true}
                         fixedSize={{ width: 300, height: 400 }}
+                        onDismiss={() => {
+                            configOptionsMenuRef.current?.close();
+                        }}
                     />
                 </Menu>
             </View>
@@ -375,7 +378,7 @@ const styles = StyleSheet.create({
     divider: {
         height: 1,
         borderTopWidth: 1,
-        borderColor: '#eee',
+        borderColor: '#ddf',
         borderStyle: 'solid',
         marginVertical: 8,
     },

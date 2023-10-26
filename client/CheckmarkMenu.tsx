@@ -5,13 +5,14 @@
 
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { MenuItem } from './Menu';
-import { createRef, useState } from 'react';
+import { createRef, useEffect, useState } from 'react';
 
 export interface CheckmarkMenuProps {
     items: CheckmarkMenuItem[];
     onSelect: (item: CheckmarkMenuItem, index: number) => void;
     includeSearchBox?: boolean;
     fixedSize?: { width: number; height: number };
+    onDismiss?: () => void;
 }
 
 export interface CheckmarkMenuItem {
@@ -29,19 +30,31 @@ export function CheckmarkMenu(props: CheckmarkMenuProps) {
     const [state, setState] = useState<CheckmarkMenuState>({
         searchFilter: '',
     });
+    const textInputRef = createRef<TextInput>();
 
     const searchFilter = state.searchFilter.toLowerCase().trim();
-    // const filteredItems = props.items;
     const filteredItems = props.items.filter((item) => {
         return !searchFilter || item.label.toLowerCase().includes(searchFilter);
     });
+
+    // We need to defer the focus until after the menu has been
+    // rendered, measured, and placed in its final position.
+    useEffect(() => {
+        if (textInputRef.current) {
+            setTimeout(() => {
+                if (textInputRef.current) {
+                    textInputRef.current.focus();
+                }
+            }, 100);
+        }
+    }, [textInputRef]);
 
     return (
         <View style={styles.contentContainer}>
             {props.includeSearchBox ? (
                 <View style={styles.searchBoxContainer}>
                     <TextInput
-                        autoFocus={true}
+                        ref={textInputRef}
                         style={styles.searchBox}
                         value={state.searchFilter}
                         placeholder={'Search'}
@@ -50,6 +63,13 @@ export function CheckmarkMenu(props: CheckmarkMenuProps) {
                             setState((prevState) => {
                                 return { ...prevState, searchFilter: newValue };
                             });
+                        }}
+                        onKeyPress={(event) => {
+                            if (event.nativeEvent.key === 'Escape') {
+                                if (props.onDismiss) {
+                                    props.onDismiss();
+                                }
+                            }
                         }}
                     />
                 </View>

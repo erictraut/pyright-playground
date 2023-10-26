@@ -36,6 +36,8 @@ export interface AppState {
     isWaitingForResponse: boolean;
 }
 
+const initialState = getStateFromUrl() ?? getInitialStateFromLocalStorage();
+
 export default function App() {
     const editorRef = useRef(null);
     const [appState, setAppState] = useState<AppState>({
@@ -48,14 +50,12 @@ export default function App() {
         diagnostics: [],
         isRightPanelDisplayed: true,
         rightPanelType: RightPanelType.About,
-        isProblemsPanelDisplayed: false,
+        isProblemsPanelDisplayed: initialState.code !== '',
         isWaitingForResponse: false,
     });
 
     useEffect(() => {
         if (!appState.gotInitialState) {
-            const initialState = getStateFromUrl() ?? getInitialStateFromLocalStorage();
-
             if (initialState.code !== '') {
                 lspClient.updateCode(initialState.code);
             }
