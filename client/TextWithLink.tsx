@@ -21,6 +21,7 @@ export default function TextWithLink(props: TextWithLinkProps) {
             style={[styles.default, props.style, isHovered ? styles.defaultHover : undefined]}
             onPress={() => {
                 if (props.useSameWindow) {
+                    history.pushState(null, '', window.location.href);
                     window.location.replace(props.url);
                 } else {
                     Linking.openURL(props.url);
