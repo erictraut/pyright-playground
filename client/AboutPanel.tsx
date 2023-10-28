@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignSelf: 'stretch',
         paddingVertical: 8,
-        paddingHorizontal: 16,
+        paddingHorizontal: 12,
     },
     headerText: {
         fontSize: 14,
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     divider: {
         height: 1,
         borderTopWidth: 1,
-        borderColor: '#ddd',
+        borderColor: '#eee',
         borderStyle: 'solid',
         marginVertical: 8,
     },

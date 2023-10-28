@@ -117,7 +117,8 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderStyle: 'solid',
         borderColor: '#ddd',
-        paddingHorizontal: 8,
+        paddingLeft: 12,
+        paddingRight: 4,
     },
     headerTitleText: {
         color: '#333',
