@@ -1,7 +1,6 @@
 node_modules
 .expo
 .build
-client/web
 server/.env
 server/dist
 server/pyright_local

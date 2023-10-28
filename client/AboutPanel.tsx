@@ -165,7 +165,9 @@ function CopyToClipboardButton(props: CopyToClipboardButtonProps) {
                 backgroundStyle={styles.clipboardButtonBackground}
                 hoverBackgroundStyle={styles.clipboardButtonBackgroundHover}
             />
-            <Text style={styles.clipboardButtonText}>{props.label}</Text>
+            <Text style={styles.clipboardButtonText} selectable={false}>
+                {props.label}
+            </Text>
         </View>
     );
 }

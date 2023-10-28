@@ -22,6 +22,8 @@ export function HeaderPanel(props: HeaderPanelProps) {
     let image = null;
     if (!error && assets) {
         image = <Image style={styles.pyrightIcon} source={assets[0]} />;
+    } else {
+        image = <View style={styles.pyrightIcon} />;
     }
 
     return (
