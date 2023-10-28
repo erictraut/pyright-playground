@@ -5,8 +5,15 @@
 
 import { StyleSheet, Text, View } from 'react-native';
 import TextWithLink from './TextWithLink';
+import IconButton from './IconButton';
+import { useState } from 'react';
 
-export function AboutPanel() {
+export interface AboutPanelProps {
+    code: string;
+    getShareableUrl: () => string;
+}
+
+export function AboutPanel(props: AboutPanelProps) {
     return (
         <View style={styles.container}>
             <Text style={styles.headerText} selectable={false}>
@@ -26,11 +33,37 @@ export function AboutPanel() {
 
             <View style={styles.divider} />
             <Text style={styles.headerText} selectable={false}>
-                {'Sharing Code Samples'}
+                {'Sharing a Code Sample'}
             </Text>
             <Text style={styles.aboutText} selectable={false}>
-                {'Copy the URL from your browser to share the code sample with others.'}
+                {'Copy a link or markdown to the clipboard.'}
             </Text>
+            <CopyToClipboardButton
+                label={'Shareable link'}
+                title={'Copy shareable link to clipboard'}
+                getTextToCopy={() => {
+                    return props.getShareableUrl();
+                }}
+            />
+            <CopyToClipboardButton
+                label={'Markdown with link'}
+                title={'Copy markdown to clipboard'}
+                getTextToCopy={() => {
+                    return `Code sample in [pyright playground](${props.getShareableUrl()})\n`;
+                }}
+            />
+            <CopyToClipboardButton
+                label={'Markdown with link and code'}
+                title={'Copy markdown to clipboard'}
+                getTextToCopy={() => {
+                    return (
+                        `Code sample in [pyright playground](${props.getShareableUrl()})\n\n` +
+                        '```' +
+                        `python\n${props.code}\n` +
+                        '```\n'
+                    );
+                }}
+            />
 
             <View style={styles.divider} />
             <Text style={styles.headerText} selectable={false}>
@@ -93,6 +126,50 @@ export function AboutPanel() {
     );
 }
 
+interface CopyToClipboardButtonProps {
+    label: string;
+    title: string;
+    getTextToCopy: () => string;
+}
+
+interface CopyToClipboardButtonState {
+    isCopied: boolean;
+}
+
+function CopyToClipboardButton(props: CopyToClipboardButtonProps) {
+    const [buttonState, setButtonState] = useState<CopyToClipboardButtonState>({ isCopied: false });
+
+    return (
+        <View style={styles.clipboardContainer}>
+            <IconButton
+                title={props.title}
+                iconName={buttonState.isCopied ? 'check' : 'copy1'}
+                iconSize={16}
+                onPress={() => {
+                    const textToCopy = props.getTextToCopy();
+
+                    try {
+                        navigator.clipboard.writeText(textToCopy);
+
+                        setButtonState({ isCopied: true });
+
+                        setTimeout(() => {
+                            setButtonState({ isCopied: false });
+                        }, 1000);
+                    } catch {
+                        // Ignore the error.
+                    }
+                }}
+                color={buttonState.isCopied ? '#090' : '#666'}
+                hoverColor={buttonState.isCopied ? '#090' : '#333'}
+                backgroundStyle={styles.clipboardButtonBackground}
+                hoverBackgroundStyle={styles.clipboardButtonBackgroundHover}
+            />
+            <Text style={styles.clipboardButtonText}>{props.label}</Text>
+        </View>
+    );
+}
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -126,5 +203,31 @@ const styles = StyleSheet.create({
         borderColor: '#eee',
         borderStyle: 'solid',
         marginVertical: 8,
+    },
+    clipboardContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginHorizontal: 20,
+        marginVertical: 4,
+    },
+    clipboardButtonBackground: {
+        height: 25,
+        width: 25,
+        paddingVertical: 3,
+        paddingHorizontal: 4,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderRadius: 4,
+        borderStyle: 'solid',
+        borderColor: '#999',
+    },
+    clipboardButtonBackgroundHover: {
+        borderColor: '#666',
+    },
+    clipboardButtonText: {
+        marginLeft: 8,
+        fontSize: 13,
+        color: '#333',
+        marginBottom: 2,
     },
 });

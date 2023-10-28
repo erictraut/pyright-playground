@@ -193,6 +193,10 @@ export default function App() {
                                 return { ...prevState, settings };
                             });
                         }}
+                        code={appState.code}
+                        getShareableUrl={() => {
+                            return updateUrlFromState(appState);
+                        }}
                     />
                 </View>
                 <ProblemsPanel

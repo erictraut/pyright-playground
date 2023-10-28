@@ -7,7 +7,7 @@ import * as lzString from 'lz-string';
 import { PlaygroundState } from './PlaygroundSettings';
 import { configSettingsMap } from './PyrightConfigSettings';
 
-export function updateUrlFromState(state: PlaygroundState) {
+export function updateUrlFromState(state: PlaygroundState): string {
     const { code, settings } = state;
     const url = new URL(window.location.href);
 
@@ -52,6 +52,13 @@ export function updateUrlFromState(state: PlaygroundState) {
     }
 
     history.replaceState(null, null, url.toString());
+
+    // Replace the domain name with the canonical one before
+    // returning the shareable URL.
+    url.host = 'pyright-play.net';
+    url.protocol = 'https';
+    url.port = '';
+    return url.toString();
 }
 
 export function getStateFromUrl(): PlaygroundState | undefined {

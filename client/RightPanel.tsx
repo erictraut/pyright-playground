@@ -24,6 +24,8 @@ export interface RightPanelProps {
     onUpdateSettings: (settings: PlaygroundSettings) => void;
     latestPyrightVersion?: string;
     supportedPyrightVersions?: string[];
+    code: string;
+    getShareableUrl: () => string;
 }
 const rightPanelWidth = 320;
 
@@ -33,7 +35,9 @@ export function RightPanel(props: RightPanelProps) {
 
     switch (props.rightPanelType) {
         case RightPanelType.About:
-            panelContents = <AboutPanel />;
+            panelContents = (
+                <AboutPanel code={props.code} getShareableUrl={props.getShareableUrl} />
+            );
             headerTitle = 'About Pyright Playground';
             break;
 
