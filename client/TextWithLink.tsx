@@ -19,8 +19,8 @@ export default function TextWithLink(props: TextWithLinkProps) {
         <Text
             ref={hoverRef}
             style={[styles.default, props.style, isHovered ? styles.defaultHover : undefined]}
-            onPress={() => {
-                if (props.useSameWindow) {
+            onPress={(event) => {
+                if (props.useSameWindow && !(event as any).metaKey) {
                     history.pushState(null, '', window.location.href);
                     window.location.replace(props.url);
                 } else {

@@ -71,6 +71,7 @@ export function CheckmarkMenu(props: CheckmarkMenuProps) {
                                 }
                             }
                         }}
+                        spellCheck={false}
                     />
                 </View>
             ) : undefined}

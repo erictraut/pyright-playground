@@ -10,21 +10,12 @@ export function AboutPanel() {
     return (
         <View style={styles.container}>
             <Text style={styles.headerText} selectable={false}>
-                {'USING THE PLAYGROUND'}
+                {'Using the Playground'}
             </Text>
             <Text style={styles.aboutText} selectable={false}>
                 {
                     'Type or paste Python code into the text editor, and Pyright will report any errors it finds.'
                 }
-            </Text>
-            <Text style={styles.aboutText} selectable={false}>
-                {' '}
-            </Text>
-            <Text style={styles.aboutText} selectable={false}>
-                {'Copy the URL from your browser to share the playground with others.'}
-            </Text>
-            <Text style={styles.aboutText} selectable={false}>
-                {' '}
             </Text>
             <TextWithLink
                 style={styles.aboutTextLink}
@@ -35,7 +26,15 @@ export function AboutPanel() {
 
             <View style={styles.divider} />
             <Text style={styles.headerText} selectable={false}>
-                {'EXAMPLES'}
+                {'Sharing Code Samples'}
+            </Text>
+            <Text style={styles.aboutText} selectable={false}>
+                {'Copy the URL from your browser to share the code sample with others.'}
+            </Text>
+
+            <View style={styles.divider} />
+            <Text style={styles.headerText} selectable={false}>
+                {'Examples'}
             </Text>
             <TextWithLink
                 style={styles.aboutTextLink}
@@ -53,7 +52,7 @@ export function AboutPanel() {
                 }
                 useSameWindow={true}
             >
-                {'Protocol Example'}
+                {'Protocols'}
             </TextWithLink>
             <TextWithLink
                 style={styles.aboutTextLink}
@@ -62,7 +61,7 @@ export function AboutPanel() {
                 }
                 useSameWindow={true}
             >
-                {'ParamSpec Example'}
+                {'ParamSpecs'}
             </TextWithLink>
             <TextWithLink
                 style={styles.aboutTextLink}
@@ -76,13 +75,10 @@ export function AboutPanel() {
 
             <View style={styles.divider} />
             <Text style={styles.headerText} selectable={false}>
-                {'PYRIGHT'}
+                {'Pyright'}
             </Text>
             <Text style={styles.aboutText} selectable={false}>
                 {'Pyright is an open-source standards-based static type checker for Python.'}
-            </Text>
-            <Text style={styles.aboutText} selectable={false}>
-                {' '}
             </Text>
             <TextWithLink
                 style={styles.aboutTextLink}
@@ -106,27 +102,29 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
     },
     headerText: {
-        fontSize: 13,
+        fontSize: 14,
         color: '#666',
         marginBottom: 8,
+        fontVariant: ['small-caps'],
     },
     aboutTextLink: {
         marginLeft: 16,
         marginRight: 8,
         fontSize: 13,
-        lineHeight: 24,
+        marginBottom: 8,
     },
     aboutText: {
         marginLeft: 16,
         marginRight: 8,
         fontSize: 13,
         color: '#333',
+        marginBottom: 8,
     },
     divider: {
         height: 1,
         borderTopWidth: 1,
         borderColor: '#ddd',
         borderStyle: 'solid',
-        marginVertical: 12,
+        marginVertical: 8,
     },
 });

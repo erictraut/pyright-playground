@@ -40,7 +40,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
     return (
         <View style={styles.container}>
-            <SettingsHeader headerText={'CONFIGURATION OPTIONS'} />
+            <SettingsHeader headerText={'Configuration Options'} />
             <SettingsCheckbox
                 key={'strict'}
                 label={'Strict'}
@@ -105,7 +105,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
             </View>
 
             <SettingsDivider />
-            <SettingsHeader headerText={'PYRIGHT VERSION'} />
+            <SettingsHeader headerText={'Pyright Version'} />
             <View style={styles.selectionContainer}>
                 <Text style={styles.selectedOptionText} selectable={false}>
                     {props.settings.pyrightVersion ||
@@ -141,7 +141,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
             </View>
 
             <SettingsDivider />
-            <SettingsHeader headerText={'PYTHON VERSION'} />
+            <SettingsHeader headerText={'Python Version'} />
             <View style={styles.selectionContainer}>
                 <Text style={styles.selectedOptionText} selectable={false}>
                     {props.settings.pythonVersion || 'Default (3.12)'}
@@ -184,7 +184,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
             </View>
 
             <SettingsDivider />
-            <SettingsHeader headerText={'PYTHON PLATFORM'} />
+            <SettingsHeader headerText={'Python Platform'} />
             <View style={styles.selectionContainer}>
                 <Text style={styles.selectedOptionText} selectable={false}>
                     {props.settings.pythonPlatform || 'Default (All)'}
@@ -217,7 +217,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
             </View>
 
             <SettingsDivider />
-            <SettingsHeader headerText={'LANGUAGE'} />
+            <SettingsHeader headerText={'Language'} />
             <View style={styles.selectionContainer}>
                 <Text style={styles.selectedOptionText} selectable={false}>
                     {getLocaleDisplayName(props.settings.locale) || 'Browser Default'}
@@ -225,8 +225,8 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 <IconButton
                     iconName="downcircleo"
                     iconSize={16}
-                    color="#669"
-                    hoverColor="#336"
+                    color="#666"
+                    hoverColor="#333"
                     onPress={() => {
                         localMenuRef.current?.open();
                     }}
@@ -296,8 +296,8 @@ function ConfigOverride(props: ConfigOverrideProps) {
             <IconButton
                 iconName="close"
                 iconSize={12}
-                color="#669"
-                hoverColor="#336"
+                color="#666"
+                hoverColor="#333"
                 onPress={props.onRemove}
             />
         </View>
@@ -386,8 +386,9 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     headerText: {
-        fontSize: 13,
+        fontSize: 14,
         color: '#666',
+        fontVariant: ['small-caps'],
     },
     resetButtonContainer: {
         alignSelf: 'center',

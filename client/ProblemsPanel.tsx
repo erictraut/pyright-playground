@@ -76,15 +76,19 @@ export function ProblemsPanel(props: ProblemsPanelProps) {
                     ) : undefined}
                 </View>
                 <ScrollView>
-                    {filteredDiagnostics.map((diag, index) => {
-                        return (
-                            <ProblemItem
-                                key={index}
-                                diagnostic={diag}
-                                onSelectRange={props.onSelectRange}
-                            />
-                        );
-                    })}
+                    {filteredDiagnostics.length > 0 ? (
+                        filteredDiagnostics.map((diag, index) => {
+                            return (
+                                <ProblemItem
+                                    key={index}
+                                    diagnostic={diag}
+                                    onSelectRange={props.onSelectRange}
+                                />
+                            );
+                        })
+                    ) : (
+                        <NoProblemsItem />
+                    )}
                 </ScrollView>
             </View>
         </Animated.View>
@@ -121,6 +125,18 @@ function ProblemItem(props: { diagnostic: Diagnostic; onSelectRange: (range: Ran
                 </View>
             </div>
         </Pressable>
+    );
+}
+
+function NoProblemsItem() {
+    return (
+        <View style={styles.diagnosticContainer}>
+            <View style={styles.diagnosticTextContainer}>
+                <Text style={styles.diagnosticText} selectable={false}>
+                    No problems have been detected.
+                </Text>
+            </View>
+        </View>
     );
 }
 

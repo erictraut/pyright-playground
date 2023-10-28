@@ -16,6 +16,8 @@ export function updateUrlFromState(state: PlaygroundState) {
         url.searchParams.delete(key);
     });
 
+    url.search = '';
+
     if (settings) {
         if (settings.pyrightVersion) {
             url.searchParams.set('pyrightVersion', settings.pyrightVersion);

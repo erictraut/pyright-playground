@@ -97,6 +97,7 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 18,
         fontWeight: 'bold',
+        fontVariant: ['small-caps'],
     },
     controlsPanel: {
         flex: 1,

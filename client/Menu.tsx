@@ -15,7 +15,7 @@ import {
 } from 'react-native-popup-menu';
 import { useHover } from './HoverHook';
 
-export const panelItemIconColor = '#0070f5';
+export const menuIconColor = '#99f';
 export const panelTextColor = '#222';
 export const focusedMenuItemBackgroundColor = '#eee';
 
@@ -138,7 +138,7 @@ export function MenuItem(props: MenuItemProps) {
                         <Icon
                             name={props.iconName as any}
                             size={14}
-                            color={props.iconName ? panelItemIconColor : 'transparent'}
+                            color={props.iconName ? menuIconColor : 'transparent'}
                         />
                     </View>
                     {labelItem}
