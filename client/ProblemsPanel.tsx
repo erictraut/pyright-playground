@@ -3,7 +3,8 @@
  * Panel that displays a list of diagnostics.
  */
 
-import Icon from '@expo/vector-icons/AntDesign';
+import * as icons from '@ant-design/icons-svg';
+import { IconDefinition } from '@ant-design/icons-svg/lib/types';
 import {
     ActivityIndicator,
     Animated,
@@ -17,6 +18,7 @@ import {
 import { Diagnostic, DiagnosticSeverity, Range } from 'vscode-languageserver-types';
 import { useHover } from './HoverHook';
 import { useEffect, useRef } from 'react';
+import { SvgIcon } from './SvgIcon';
 
 export interface ProblemsPanelProps {
     diagnostics: Diagnostic[];
@@ -141,21 +143,21 @@ function NoProblemsItem() {
 }
 
 function ProblemIcon(props: { severity: DiagnosticSeverity }) {
-    let iconName: string;
+    let iconDefinition: IconDefinition;
     let iconColor: string;
 
     if (props.severity === DiagnosticSeverity.Warning) {
-        iconName = 'warning';
+        iconDefinition = icons.WarningOutlined;
         iconColor = '#b89500';
     } else if (props.severity === DiagnosticSeverity.Information) {
-        iconName = 'infocirlceo';
+        iconDefinition = icons.InfoCircleOutlined;
         iconColor = 'blue';
     } else {
-        iconName = 'closecircleo';
+        iconDefinition = icons.CloseCircleOutlined;
         iconColor = '#e51400';
     }
 
-    return <Icon name={iconName as any} size={14} color={iconColor} />;
+    return <SvgIcon iconDefinition={iconDefinition} iconSize={14} color={iconColor} />;
 }
 
 const styles = StyleSheet.create({

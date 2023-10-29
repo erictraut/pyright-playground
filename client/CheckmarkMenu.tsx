@@ -3,6 +3,7 @@
  * A menu that displays a checkmark next to items.
  */
 
+import * as icons from '@ant-design/icons-svg';
 import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { MenuItem } from './Menu';
 import { createRef, useEffect, useState } from 'react';
@@ -83,7 +84,7 @@ export function CheckmarkMenu(props: CheckmarkMenuProps) {
                     return (
                         <MenuItem
                             key={index}
-                            iconName={item.checked ? 'check' : undefined}
+                            iconDefinition={item.checked ? icons.CheckOutlined : undefined}
                             label={item.label}
                             labelFilterText={searchFilter}
                             onSelect={() => props.onSelect(item, index)}

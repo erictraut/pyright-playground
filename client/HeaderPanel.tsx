@@ -3,6 +3,7 @@
  * Header bar with embedded controls for the playground.
  */
 
+import * as icons from '@ant-design/icons-svg';
 import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useAssets } from 'expo-asset';
 import IconButton from './IconButton';
@@ -39,36 +40,30 @@ export function HeaderPanel(props: HeaderPanelProps) {
                 Pyright Playground
             </Text>
             <View style={styles.controlsPanel}>
-                {/* <IconButton
-                    iconName="link"
-                    iconSize={headerIconButtonSize}
-                    disabled={props.rightPanelDisplayed === RightPanelType.Share}
-                    color={'#fff'}
-                    title={'Copy link to clipboard'}
-                    onPress={() => {
-                        props.onShowRightPanel(RightPanelType.Share);
-                    }}
-                /> */}
                 <IconButton
-                    iconName="setting"
+                    iconDefinition={icons.SettingOutlined}
                     iconSize={headerIconButtonSize}
                     disabled={
                         props.isRightPanelDisplayed &&
                         props.rightPanelType === RightPanelType.Settings
                     }
                     color={'#fff'}
+                    hoverColor={'#eee'}
+                    disableColor={'#669'}
                     title={'Playground settings'}
                     onPress={() => {
                         props.onShowRightPanel(RightPanelType.Settings);
                     }}
                 />
                 <IconButton
-                    iconName="questioncircleo"
+                    iconDefinition={icons.QuestionCircleOutlined}
                     iconSize={headerIconButtonSize}
                     disabled={
                         props.isRightPanelDisplayed && props.rightPanelType === RightPanelType.About
                     }
                     color={'#fff'}
+                    hoverColor={'#eee'}
+                    disableColor={'#669'}
                     title={'About Pyright Playground'}
                     onPress={() => {
                         props.onShowRightPanel(RightPanelType.About);

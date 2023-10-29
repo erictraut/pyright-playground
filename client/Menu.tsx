@@ -3,7 +3,7 @@
  * Provides rendering of (and interaction with) a menu of options.
  */
 
-import Icon from '@expo/vector-icons/AntDesign';
+import { IconDefinition } from '@ant-design/icons-svg/lib/types';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import {
@@ -14,6 +14,7 @@ import {
     renderers,
 } from 'react-native-popup-menu';
 import { useHover } from './HoverHook';
+import { SvgIcon } from './SvgIcon';
 
 export const menuIconColor = '#99f';
 export const panelTextColor = '#222';
@@ -76,7 +77,7 @@ export interface MenuItemProps {
     label: string;
     labelFilterText?: string;
     title?: string;
-    iconName?: string;
+    iconDefinition?: IconDefinition;
     disabled?: boolean;
     focused?: boolean;
     onSelect?: () => void;
@@ -135,11 +136,13 @@ export function MenuItem(props: MenuItemProps) {
                     ref={hoverRef}
                 >
                     <View style={styles.iconContainer}>
-                        <Icon
-                            name={props.iconName as any}
-                            size={14}
-                            color={props.iconName ? menuIconColor : 'transparent'}
-                        />
+                        {props.iconDefinition ? (
+                            <SvgIcon
+                                iconDefinition={props.iconDefinition}
+                                iconSize={14}
+                                color={props.iconDefinition ? menuIconColor : 'transparent'}
+                            />
+                        ) : undefined}
                     </View>
                     {labelItem}
                 </View>

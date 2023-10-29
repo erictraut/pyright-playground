@@ -3,19 +3,13 @@
  * A button that displays an icon and handles press and hover events.
  */
 
-import Icon from '@expo/vector-icons/AntDesign';
-import {
-    GestureResponderEvent,
-    Pressable,
-    StyleProp,
-    StyleSheet,
-    View,
-    ViewStyle,
-} from 'react-native';
+import { IconDefinition } from '@ant-design/icons-svg/lib/types';
+import { GestureResponderEvent, Pressable, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 import { useHover } from './HoverHook';
+import { SvgIcon } from './SvgIcon';
 
 interface IconButtonProps {
-    iconName: string;
+    iconDefinition: IconDefinition;
     iconSize: number;
     disabled?: boolean;
     title?: string;
@@ -27,45 +21,36 @@ interface IconButtonProps {
     onPress: (event: GestureResponderEvent) => void;
 }
 
-export default function IconButton({
-    iconName,
-    iconSize,
-    disabled,
-    color,
-    title,
-    hoverColor,
-    disableColor,
-    backgroundStyle,
-    hoverBackgroundStyle,
-    onPress,
-}: IconButtonProps) {
+export default function IconButton(props: IconButtonProps) {
     const [hoverRef, isHovered] = useHover();
 
     let effectiveColor: string | undefined;
-    if (disabled) {
-        effectiveColor = disableColor ?? '#ccc';
+    if (props.disabled) {
+        effectiveColor = props.disableColor ?? '#ccc';
     } else if (isHovered) {
-        effectiveColor = hoverColor ?? color;
+        effectiveColor = props.hoverColor ?? props.color;
     } else {
-        effectiveColor = color;
+        effectiveColor = props.color;
     }
 
     return (
-        <div title={title}>
+        <div title={props.title}>
             <Pressable
                 ref={hoverRef}
-                onPress={onPress}
-                disabled={disabled}
+                onPress={props.onPress}
+                disabled={props.disabled}
                 style={[
                     styles.defaultBackgroundStyle,
-                    disabled ? styles.disabled : undefined,
-                    backgroundStyle,
-                    isHovered ? hoverBackgroundStyle : undefined,
+                    props.disabled ? styles.disabled : undefined,
+                    props.backgroundStyle,
+                    isHovered ? props.hoverBackgroundStyle : undefined,
                 ]}
             >
-                <View style={styles.container}>
-                    <Icon name={iconName as any} size={iconSize} color={effectiveColor} />
-                </View>
+                <SvgIcon
+                    iconDefinition={props.iconDefinition}
+                    iconSize={props.iconSize}
+                    color={effectiveColor}
+                />
             </Pressable>
         </div>
     );
@@ -76,7 +61,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 6,
         paddingVertical: 2,
     },
-    container: {},
     disabled: {
         opacity: 1,
         cursor: 'default',

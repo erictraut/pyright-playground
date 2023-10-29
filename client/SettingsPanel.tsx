@@ -3,6 +3,7 @@
  * A panel that displays settings for the app.
  */
 
+import * as icons from '@ant-design/icons-svg';
 import { useRef } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CheckmarkMenu, CheckmarkMenuItem } from './CheckmarkMenu';
@@ -59,11 +60,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 <Text style={styles.selectedOptionText} selectable={false}>
                     {configOverrides.length === 0 ? 'Default' : 'Custom'}
                 </Text>
-                <IconButton
-                    iconName="downcircleo"
-                    iconSize={16}
-                    color="#669"
-                    hoverColor="#336"
+                <MenuButton
                     onPress={() => {
                         configOptionsMenuRef.current?.open();
                     }}
@@ -113,11 +110,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                             ? `Latest (${props.latestPyrightVersion})`
                             : 'Latest')}
                 </Text>
-                <IconButton
-                    iconName="downcircleo"
-                    iconSize={16}
-                    color="#669"
-                    hoverColor="#336"
+                <MenuButton
                     onPress={() => {
                         pyrightVersionMenuRef.current?.open();
                     }}
@@ -146,11 +139,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 <Text style={styles.selectedOptionText} selectable={false}>
                     {props.settings.pythonVersion || 'Default (3.12)'}
                 </Text>
-                <IconButton
-                    iconName="downcircleo"
-                    iconSize={16}
-                    color="#669"
-                    hoverColor="#336"
+                <MenuButton
                     onPress={() => {
                         pythonVersionMenuRef.current?.open();
                     }}
@@ -189,11 +178,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 <Text style={styles.selectedOptionText} selectable={false}>
                     {props.settings.pythonPlatform || 'Default (All)'}
                 </Text>
-                <IconButton
-                    iconName="downcircleo"
-                    iconSize={16}
-                    color="#669"
-                    hoverColor="#336"
+                <MenuButton
                     onPress={() => {
                         pythonPlatformMenuRef.current?.open();
                     }}
@@ -222,11 +207,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 <Text style={styles.selectedOptionText} selectable={false}>
                     {getLocaleDisplayName(props.settings.locale) || 'Browser Default'}
                 </Text>
-                <IconButton
-                    iconName="downcircleo"
-                    iconSize={16}
-                    color="#666"
-                    hoverColor="#333"
+                <MenuButton
                     onPress={() => {
                         localMenuRef.current?.open();
                     }}
@@ -266,6 +247,18 @@ export function SettingsPanel(props: SettingsPanelProps) {
     );
 }
 
+function MenuButton(props: { onPress: () => void }) {
+    return (
+        <IconButton
+            iconDefinition={icons.DownCircleOutlined}
+            iconSize={18}
+            color="#669"
+            hoverColor="#336"
+            onPress={props.onPress}
+        />
+    );
+}
+
 function SettingsHeader(props: { headerText: string }) {
     return (
         <View style={styles.headerTextBox}>
@@ -293,13 +286,15 @@ function ConfigOverride(props: ConfigOverrideProps) {
             <Text style={styles.configOverrideText} selectable={false} numberOfLines={1}>
                 {text}
             </Text>
-            <IconButton
-                iconName="close"
-                iconSize={12}
-                color="#666"
-                hoverColor="#333"
-                onPress={props.onRemove}
-            />
+            <View style={{ marginTop: -4 }}>
+                <IconButton
+                    iconDefinition={icons.CloseOutlined}
+                    iconSize={12}
+                    color="#666"
+                    hoverColor="#333"
+                    onPress={props.onRemove}
+                />
+            </View>
         </View>
     );
 }

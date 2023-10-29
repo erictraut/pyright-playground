@@ -3,9 +3,10 @@
  * A simple check box (toggle) control used in the settings panel.
  */
 
-import Icon from '@expo/vector-icons/AntDesign';
+import * as icons from '@ant-design/icons-svg';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useHover } from './HoverHook';
+import { SvgIcon } from './SvgIcon';
 
 export interface SettingsCheckboxProps {
     label: string;
@@ -36,7 +37,11 @@ export function SettingsCheckbox(props: SettingsCheckboxProps) {
                 ]}
             >
                 {props.value ? (
-                    <Icon name={'check'} size={12} color={props.disabled ? '#aaa' : '#333'} />
+                    <SvgIcon
+                        iconDefinition={icons.CheckOutlined}
+                        iconSize={12}
+                        color={props.disabled ? '#aaa' : '#333'}
+                    />
                 ) : undefined}
             </View>
             <div title={props.title}>

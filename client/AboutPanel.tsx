@@ -3,10 +3,11 @@
  * An "about this app" panel.
  */
 
-import { StyleSheet, Text, View } from 'react-native';
-import TextWithLink from './TextWithLink';
-import IconButton from './IconButton';
+import * as icons from '@ant-design/icons-svg';
 import { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import IconButton from './IconButton';
+import TextWithLink from './TextWithLink';
 
 export interface AboutPanelProps {
     code: string;
@@ -143,7 +144,7 @@ function CopyToClipboardButton(props: CopyToClipboardButtonProps) {
         <View style={styles.clipboardContainer}>
             <IconButton
                 title={props.title}
-                iconName={buttonState.isCopied ? 'check' : 'copy1'}
+                iconDefinition={buttonState.isCopied ? icons.CheckOutlined : icons.CopyOutlined}
                 iconSize={16}
                 onPress={() => {
                     const textToCopy = props.getTextToCopy();
@@ -213,9 +214,9 @@ const styles = StyleSheet.create({
         marginVertical: 4,
     },
     clipboardButtonBackground: {
-        height: 25,
-        width: 25,
-        paddingVertical: 3,
+        height: 26,
+        width: 26,
+        paddingVertical: 4,
         paddingHorizontal: 4,
         backgroundColor: '#fff',
         borderWidth: 1,

@@ -3,6 +3,7 @@
  * Collapsible panel that appears on the right side of the window.
  */
 
+import * as icons from '@ant-design/icons-svg';
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, ScrollView, StyleSheet, Text, View } from 'react-native';
 import IconButton from './IconButton';
@@ -80,7 +81,7 @@ export function RightPanel(props: RightPanelProps) {
                     </Text>
                     <View style={styles.headerControlsContainer}>
                         <IconButton
-                            iconName="close"
+                            iconDefinition={icons.CloseOutlined}
                             iconSize={14}
                             color={'#333'}
                             hoverColor={'#000'}
@@ -131,7 +132,6 @@ const styles = StyleSheet.create({
     },
     headerControlsContainer: {
         flex: 1,
-        paddingTop: 2,
         alignItems: 'flex-end',
     },
 });

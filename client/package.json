@@ -8,7 +8,7 @@
         "build:web": "expo export:web && shx rm -rf ../server/dist/webapp && shx mkdir -p ../server/dist/webapp && shx cp -r ./web-build/* ../server/dist/webapp/"
     },
     "dependencies": {
-        "@expo/vector-icons": "^13.0.0",
+        "@ant-design/icons": "^5.2.6",
         "@monaco-editor/react": "^4.6.0",
         "expo": "~49.0.15",
         "expo-status-bar": "~1.6.0",
