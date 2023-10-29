@@ -26,8 +26,9 @@ export function SvgIcon(props: SvgIconProps) {
         <View style={styles.container}>
             <div
                 style={{
-                    height: props.iconSize - 2,
-                    width: props.iconSize - 2,
+                    display: 'flex',
+                    height: props.iconSize,
+                    width: props.iconSize,
                     ...styles.iconContainer,
                 }}
                 dangerouslySetInnerHTML={{ __html: svgElement }}

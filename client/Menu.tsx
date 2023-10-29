@@ -16,7 +16,7 @@ import {
 import { useHover } from './HoverHook';
 import { SvgIcon } from './SvgIcon';
 
-export const menuIconColor = '#99f';
+export const menuIconColor = '#669';
 export const panelTextColor = '#222';
 export const focusedMenuItemBackgroundColor = '#eee';
 
@@ -130,7 +130,9 @@ export function MenuItem(props: MenuItemProps) {
                 <View
                     style={[
                         styles.container,
-                        props.focused || isHovered ? styles.focused : undefined,
+                        (props.focused || isHovered) && !props.disabled
+                            ? styles.focused
+                            : undefined,
                         props.disabled ? styles.disabled : undefined,
                     ]}
                     ref={hoverRef}

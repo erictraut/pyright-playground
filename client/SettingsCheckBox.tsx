@@ -40,7 +40,7 @@ export function SettingsCheckbox(props: SettingsCheckboxProps) {
                     <SvgIcon
                         iconDefinition={icons.CheckOutlined}
                         iconSize={12}
-                        color={props.disabled ? '#aaa' : '#333'}
+                        color={props.disabled ? '#aaa' : '#669'}
                     />
                 ) : undefined}
             </View>
@@ -69,8 +69,10 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
     },
     checkbox: {
-        width: 14,
-        height: 14,
+        width: 16,
+        height: 16,
+        paddingVertical: 1,
+        paddingHorizontal: 1,
         borderColor: '#333',
         borderWidth: 1,
         borderStyle: 'solid',
