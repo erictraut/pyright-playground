@@ -45,15 +45,19 @@ function startService() {
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use('/api', routes);
 
+    app.use('*', (req, res, next) => {
+        // Redirect from azurewebsites URL to custom domain.
+        if (req.hostname.match('pyright-playground.azurewebsites.net')) {
+            res.redirect(301, 'https://pyright-play.net');
+        } else {
+            next();
+        }
+    });
+
     app.use(express.static(path.join(root, 'dist/webapp')));
 
     app.get('*', (req, res) => {
-        // Redirect from azurewebsites URL to custom domain.
-        if (req.baseUrl.match('pyright-playground.azurewebsites.net')) {
-            res.redirect(301, 'https://pyright-play.net');
-        } else {
-            res.sendFile('dist/webapp/index.html', { root });
-        }
+        res.sendFile('dist/webapp/index.html', { root });
     });
 
     app.listen(apiPort, () => {
