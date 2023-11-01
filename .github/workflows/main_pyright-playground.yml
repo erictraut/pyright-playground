@@ -41,6 +41,7 @@ jobs:
             server/.build
             server/dist
             server/index.js
+            server/web.config
 
   deploy:
     runs-on: ubuntu-latest
