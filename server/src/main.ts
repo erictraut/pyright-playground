@@ -46,6 +46,12 @@ function startService() {
     app.use('/api', routes);
 
     app.use(express.static(path.join(root, 'dist/webapp')));
+
+    // Redirect from azurewebsites URL to custom domain.
+    app.get(/pyright-playground.azurewebsites.net/, (req, res) => {
+        res.redirect(301, 'https://pyright-play.net');
+    });
+
     app.get('*', (req, res) => {
         res.sendFile('dist/webapp/index.html', { root });
     });
