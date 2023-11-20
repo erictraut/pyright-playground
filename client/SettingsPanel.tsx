@@ -36,7 +36,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
     const pyrightVersionMenuRef = useRef<MenuRef>(null);
     const pythonVersionMenuRef = useRef<MenuRef>(null);
     const pythonPlatformMenuRef = useRef<MenuRef>(null);
-    const localMenuRef = useRef<MenuRef>(null);
+    const localeMenuRef = useRef<MenuRef>(null);
     const configOverrides = getNonDefaultConfigOptions(props.settings);
 
     return (
@@ -209,10 +209,10 @@ export function SettingsPanel(props: SettingsPanelProps) {
                 </Text>
                 <MenuButton
                     onPress={() => {
-                        localMenuRef.current?.open();
+                        localeMenuRef.current?.open();
                     }}
                 />
-                <Menu name={'locale'} ref={localMenuRef}>
+                <Menu name={'locale'} ref={localeMenuRef}>
                     <CheckmarkMenu
                         items={supportedLocales.map((locale) => {
                             return {

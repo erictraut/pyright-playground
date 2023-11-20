@@ -58,16 +58,16 @@ export const supportedLocales: LocalInfo[] = [
         code: 'pl',
     },
     {
-        displayName: 'Spanish - español',
-        code: 'es',
-    },
-    {
         displayName: 'Portuguese (Brazil) - português',
         code: 'pt-br',
     },
     {
         displayName: 'Russian - русский',
         code: 'ru',
+    },
+    {
+        displayName: 'Spanish - español',
+        code: 'es',
     },
     {
         displayName: 'Turkish - Türkçe',
