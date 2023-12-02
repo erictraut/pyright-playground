@@ -320,7 +320,7 @@ function getNonDefaultConfigOptions(settings: PlaygroundSettings): ConfigOptionW
             return;
         }
 
-        const defaultValue = configInfo.isEnabledInBasic;
+        const defaultValue = configInfo.isEnabledInStandard;
         const overrideValue = settings.configOverrides[configInfo.name] ?? defaultValue;
 
         if (defaultValue !== overrideValue) {
@@ -335,7 +335,7 @@ function getConfigOptionMenuItem(
     settings: PlaygroundSettings,
     config: PyrightConfigSetting
 ): CheckmarkMenuItem {
-    const isEnabled = settings.configOverrides[config.name] ?? config.isEnabledInBasic;
+    const isEnabled = settings.configOverrides[config.name] ?? config.isEnabledInStandard;
 
     return {
         label: config.name,
@@ -348,7 +348,7 @@ function getConfigOptionMenuItem(
 function toggleConfigOption(settings: PlaygroundSettings, optionName: string): PlaygroundSettings {
     const configOverrides = { ...settings.configOverrides };
     const configInfo = configSettings.find((s) => s.name === optionName);
-    const isEnabledByDefault = configInfo?.isEnabledInBasic;
+    const isEnabledByDefault = configInfo?.isEnabledInStandard;
     const isEnabled = configOverrides[optionName] ?? isEnabledByDefault;
 
     if (isEnabledByDefault === !isEnabled) {
