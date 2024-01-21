@@ -103,6 +103,20 @@ export default function App() {
         }
     });
 
+    const handleKeyPress = (event: KeyboardEvent) => {
+        // Swallow command-s or ctrl-s to prevent browser save.
+        if (event.key === 's' && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    };
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleKeyPress);
+
+        return () => window.removeEventListener('keydown', handleKeyPress);
+    }, []);
+
     useEffect(() => {
         setStateToLocalStorage({ code: appState.code, settings: appState.settings });
         updateUrlFromState(appState);
