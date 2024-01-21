@@ -60,6 +60,12 @@ export const configSettings: PyrightConfigSetting[] = [
         isEnabledInStrict: true,
     },
     {
+        name: 'reportInvalidTypeForm',
+        description: 'Controls reporting of type expressions that use an invalid form',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
         name: 'reportMissingImports',
         description: 'Controls reporting of imports that cannot be resolved',
         isEnabledInStandard: true,
@@ -120,8 +126,75 @@ export const configSettings: PyrightConfigSetting[] = [
         isEnabledInStrict: true,
     },
     {
+        name: 'reportAbstractUsage',
+        description: 'Controls reporting of attempted instantiation of abstract class',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportArgumentType',
+        description: 'Controls reporting of incompatible argument type',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportAssignmentType',
+        description: 'Controls reporting of type incompatibilities for assignments',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportAttributeAccessIssue',
+        description: 'Controls reporting of issues related to attribute accesses',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportCallIssue',
+        description: 'Controls reporting of issues related to call expressions and arguments',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportInconsistentOverload',
+        description: 'Controls reporting of inconsistencies between function overload signatures',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportInvalidTypeArguments',
+        description: 'Controls reporting of invalid type argument usage',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportAssertTypeFailure',
+        description: 'Controls reporting of type mismatch detected by typing.assert_type call',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
         name: 'reportGeneralTypeIssues',
         description: 'Controls reporting of general type issues',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportIndexIssue',
+        description: 'Controls reporting of issues related to index operations and expressions',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportNoOverloadImplementation',
+        description:
+            'Controls reporting of an overloaded function or method with a missing implementation',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportOperatorIssue',
+        description: 'Controls reporting of diagnostics related to unary and binary operators',
         isEnabledInStandard: true,
         isEnabledInStrict: true,
     },
@@ -166,6 +239,19 @@ export const configSettings: PyrightConfigSetting[] = [
         isEnabledInStrict: true,
     },
     {
+        name: 'reportRedeclaration',
+        description:
+            'Controls reporting of attempts to declare the type of a symbol multiple times',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportReturnType',
+        description: 'Controls reporting of function return type incompatibility',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
         name: 'reportTypedDictNotRequiredAccess',
         description:
             'Controls reporting of attempts to access a non-required key in a TypedDict without a check for its presence',
@@ -181,8 +267,7 @@ export const configSettings: PyrightConfigSetting[] = [
     },
     {
         name: 'reportUnboundVariable',
-        description:
-            'Controls reporting of attempts to use an unbound or possibly unbound variable',
+        description: 'Controls reporting of attempts to use an unbound variable',
         isEnabledInStandard: true,
         isEnabledInStrict: true,
     },
@@ -275,6 +360,13 @@ export const configSettings: PyrightConfigSetting[] = [
         name: 'reportOverlappingOverload',
         description:
             'Controls reporting of function overloads that overlap in signature and obscure each other or do not agree on return type',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
+        name: 'reportPossiblyUnboundVariable',
+        description:
+            'Controls reporting of attempts to use variable that is possibly unbound on some code paths',
         isEnabledInStandard: true,
         isEnabledInStrict: true,
     },
