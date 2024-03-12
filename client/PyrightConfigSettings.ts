@@ -272,6 +272,13 @@ export const configSettings: PyrightConfigSetting[] = [
         isEnabledInStrict: true,
     },
     {
+        name: 'reportUnhashable',
+        description:
+            'Controls reporting of attempts to use an unhashable object in a container that requires hashability',
+        isEnabledInStandard: true,
+        isEnabledInStrict: true,
+    },
+    {
         name: 'reportUnusedCoroutine',
         description:
             'Controls reporting of call expressions that returns Coroutine whose results are not consumed',
