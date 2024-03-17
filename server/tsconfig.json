@@ -11,7 +11,8 @@
     "skipLibCheck": true,
     "target": "ESNext",
     "sourceMap": true,
-    "strict": true
+    "strict": true,
+    "noEmit": true
   },
   "exclude": [
     "node_modules",
