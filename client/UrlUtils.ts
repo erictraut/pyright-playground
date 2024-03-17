@@ -4,7 +4,7 @@
  */
 
 import * as lzString from 'lz-string';
-import { PlaygroundState } from './PlaygroundSettings';
+import { TypeCheckingMode, PlaygroundState } from './PlaygroundSettings';
 import { configSettingsMap } from './PyrightConfigSettings';
 
 export function updateUrlFromState(state: PlaygroundState): string {
@@ -31,8 +31,8 @@ export function updateUrlFromState(state: PlaygroundState): string {
             url.searchParams.set('pythonPlatform', settings.pythonPlatform);
         }
 
-        if (settings.strictMode) {
-            url.searchParams.set('strict', 'true');
+        if (settings.typeCheckingMode) {
+            url.searchParams.set('typeCheckingMode', settings.typeCheckingMode);
         }
 
         if (settings.locale) {
@@ -77,14 +77,15 @@ export function getStateFromUrl(): PlaygroundState | undefined {
         code,
         settings: {
             configOverrides: {},
+            typeCheckingMode: 'all'
         },
     };
 
     url.searchParams.forEach((value, key) => {
         switch (key) {
-            case 'strict': {
+            case 'typeCheckingMode': {
                 if (Boolean(value)) {
-                    state.settings.strictMode = true;
+                    state.settings.typeCheckingMode = value as TypeCheckingMode;
                 }
                 break;
             }

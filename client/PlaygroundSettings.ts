@@ -3,8 +3,10 @@
  * Interface that defines the settings for the pyright playground.
  */
 
+export type TypeCheckingMode = 'standard' | 'strict' | 'all'
+
 export interface PlaygroundSettings {
-    strictMode?: boolean;
+    typeCheckingMode: TypeCheckingMode;
     configOverrides: { [name: string]: boolean };
     pyrightVersion?: string;
     pythonVersion?: string;

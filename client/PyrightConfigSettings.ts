@@ -570,6 +570,18 @@ export const configSettings: PyrightConfigSetting[] = [
         isEnabledInStandard: false,
         isEnabledInStrict: false,
     },
+    {
+        name: 'reportUnreachable',
+        description: 'Controls reporting of unreachable code',
+        isEnabledInStandard: false,
+        isEnabledInStrict: false,
+    },
+    {
+        name: 'reportAny',
+        description: 'Controls reporting of values typed as `Any`',
+        isEnabledInStandard: false,
+        isEnabledInStrict: false,
+    },
 ];
 
 export const configSettingsAlphabetized = configSettings.sort((a, b) => {

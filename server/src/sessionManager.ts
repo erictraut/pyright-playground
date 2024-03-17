@@ -256,8 +256,8 @@ function synthesizePyrightConfigFile(tempDirPath: string, sessionOptions?: Sessi
         config.pythonPlatform = defaultPythonPlatform;
     }
 
-    if (sessionOptions?.typeCheckingMode === 'strict') {
-        config.typeCheckingMode = 'strict';
+    if (sessionOptions?.typeCheckingMode) {
+        config.typeCheckingMode = sessionOptions.typeCheckingMode;
     }
 
     if (sessionOptions?.configOverrides) {

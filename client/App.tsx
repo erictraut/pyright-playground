@@ -44,6 +44,7 @@ export default function App() {
         gotInitialState: false,
         code: '',
         settings: {
+            typeCheckingMode: 'all',
             configOverrides: {},
         },
         requestedPyrightVersion: false,

@@ -206,8 +206,8 @@ export class LspSession {
                 sessionOptions.pythonVersion = this._settings.pythonVersion;
             }
 
-            if (this._settings.strictMode) {
-                sessionOptions.typeCheckingMode = 'strict';
+            if (this._settings.typeCheckingMode) {
+                sessionOptions.typeCheckingMode = this._settings.typeCheckingMode;
             }
 
             sessionOptions.configOverrides = { ...this._settings.configOverrides };

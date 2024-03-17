@@ -10,7 +10,7 @@ import { CheckmarkMenu, CheckmarkMenuItem } from './CheckmarkMenu';
 import IconButton from './IconButton';
 import { getLocaleDisplayName, supportedLocales } from './Locales';
 import { Menu, MenuRef } from './Menu';
-import { PlaygroundSettings } from './PlaygroundSettings';
+import { TypeCheckingMode, PlaygroundSettings } from './PlaygroundSettings';
 import PushButton from './PushButton';
 import {
     PyrightConfigSetting,
@@ -32,6 +32,7 @@ export interface SettingsPanelProps {
 }
 
 export function SettingsPanel(props: SettingsPanelProps) {
+    const typeCheckingModeMenuRef = useRef<MenuRef>(null);
     const configOptionsMenuRef = useRef<MenuRef>(null);
     const pyrightVersionMenuRef = useRef<MenuRef>(null);
     const pythonVersionMenuRef = useRef<MenuRef>(null);
@@ -41,21 +42,41 @@ export function SettingsPanel(props: SettingsPanelProps) {
 
     return (
         <View style={styles.container}>
-            <SettingsHeader headerText={'Configuration Options'} />
-            <SettingsCheckbox
-                key={'strict'}
-                label={'Strict'}
-                title={'Enable set of strict type checking options'}
-                disabled={false}
-                value={!!props.settings.strictMode}
-                onChange={() => {
-                    props.onUpdateSettings({
-                        ...props.settings,
-                        strictMode: !props.settings.strictMode,
-                    });
-                }}
-            />
+            <SettingsHeader headerText={'Type Checking Mode'} />
+            <View style={styles.selectionContainer}>
+                <Text style={styles.selectedOptionText} selectable={false}>
+                    {!props.settings.typeCheckingMode || props.settings.typeCheckingMode === 'all'
+                        ? 'Default (all)'
+                        : props.settings.typeCheckingMode}
+                </Text>
+                <MenuButton
+                    onPress={() => {
+                        typeCheckingModeMenuRef.current?.open();
+                    }}
+                />
+                <Menu name={'typeCheckingMode'} ref={typeCheckingModeMenuRef}>
+                    <CheckmarkMenu
+                        items={['all', 'strict', 'standard'].map((preset) => ({
+                            checked: preset === props.settings.typeCheckingMode,
+                            label: preset,
+                        }))}
+                        onSelect={(item) => {
+                            props.onUpdateSettings({
+                                ...props.settings,
+                                typeCheckingMode: item.label as TypeCheckingMode,
+                            });
+                        }}
+                        includeSearchBox={true}
+                        fixedSize={{ width: 300, height: 400 }}
+                        onDismiss={() => {
+                            typeCheckingModeMenuRef.current?.close();
+                        }}
+                    />
+                </Menu>
+            </View>
 
+            <SettingsDivider />
+            <SettingsHeader headerText={'Configuration Options'} />
             <View style={styles.selectionContainer}>
                 <Text style={styles.selectedOptionText} selectable={false}>
                     {configOverrides.length === 0 ? 'Default' : 'Custom'}
@@ -239,6 +260,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
                     onPress={() => {
                         props.onUpdateSettings({
                             configOverrides: {},
+                            typeCheckingMode: 'all',
                         });
                     }}
                 />
@@ -302,7 +324,7 @@ function ConfigOverride(props: ConfigOverrideProps) {
 function areSettingsDefault(settings: PlaygroundSettings): boolean {
     return (
         Object.keys(settings.configOverrides).length === 0 &&
-        !settings.strictMode &&
+        settings.typeCheckingMode === undefined &&
         settings.pyrightVersion === undefined &&
         settings.pythonVersion === undefined &&
         settings.pythonPlatform === undefined &&
@@ -314,9 +336,12 @@ function getNonDefaultConfigOptions(settings: PlaygroundSettings): ConfigOptionW
     const overrides: ConfigOptionWithValue[] = [];
 
     configSettingsAlphabetized.forEach((configInfo) => {
-        // If strict mode is in effect, don't consider overrides if the
-        // config option is always on in strict mode.
-        if (settings.strictMode && configInfo.isEnabledInStrict) {
+        // If all or strict mode is in effect, don't consider overrides if the
+        // config option is always on
+        if (
+            settings.typeCheckingMode === 'all' ||
+            (settings.typeCheckingMode === 'strict' && configInfo.isEnabledInStrict)
+        ) {
             return;
         }
 
@@ -335,12 +360,14 @@ function getConfigOptionMenuItem(
     settings: PlaygroundSettings,
     config: PyrightConfigSetting
 ): CheckmarkMenuItem {
-    const isEnabled = settings.configOverrides[config.name] ?? config.isEnabledInStandard;
+    const isAll = settings.typeCheckingMode === 'all';
+    const isEnabled =
+        isAll || (settings.configOverrides[config.name] ?? config.isEnabledInStandard);
 
     return {
         label: config.name,
-        checked: isEnabled || (config.isEnabledInStrict && settings.strictMode),
-        disabled: config.isEnabledInStrict && settings.strictMode,
+        checked: isEnabled || (config.isEnabledInStrict && settings.typeCheckingMode === 'strict'),
+        disabled: isAll || (config.isEnabledInStrict && settings.typeCheckingMode === 'strict'),
         title: config.description,
     };
 }

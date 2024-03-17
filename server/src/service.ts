@@ -219,8 +219,8 @@ function validateSessionOptions(req: Request, res: Response): SessionOptions | u
 
     const typeCheckingMode = req.body.typeCheckingMode;
     if (typeCheckingMode !== undefined) {
-        if (typeCheckingMode !== 'strict') {
-            res.status(400).json({ message: 'Invalid typeCheckingMode' });
+        if (!['strict', 'all', 'standard'].includes(typeCheckingMode)) {
+            res.status(400).json({ message: `Invalid typeCheckingMode: ${typeCheckingMode}` });
             return undefined;
         }
     }
