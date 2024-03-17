@@ -233,7 +233,7 @@ async function installPyright(requestedVersion: string | undefined): Promise<Ins
             const manager = new PluginManager({pluginsPath: path.join(dirName,'node_modules')})
             await manager.install('basedpyright', version)
         } catch(err) {
-            logger.error(`Failed to install pyright ${version}`);
+            logger.error(`Failed to install pyright ${version} (error: ${err})`);
             throw `Failed to install pyright@${version}`;
         }
         logger.info(`Install of pyright ${version} succeeded`);
