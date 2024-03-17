@@ -23,8 +23,6 @@ export default router;
 const corsOptions: CorsOptions = {
     origin: [
         /http:\/\/localhost\:*/,
-        'https://pyright-playground.azurewebsites.net',
-        'https://pyright-play.net',
     ],
 };
 

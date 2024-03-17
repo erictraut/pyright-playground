@@ -29,7 +29,7 @@ export interface ServerStatus {
 // Number of attempts to create a new session before giving up.
 const maxErrorCount = 4;
 
-let appServerApiAddressPrefix = 'https://pyright-playground.azurewebsites.net/api/';
+let appServerApiAddressPrefix = 'api/';
 
 // TODO - this is for local debugging in the browser. Remove for
 // React Native code.
