@@ -5,6 +5,7 @@
  */
 
 import * as fs from 'fs';
+import { mkdir } from 'fs/promises'
 import { exec, fork } from 'node:child_process';
 import * as os from 'os';
 import packageJson from 'package-json';
@@ -13,6 +14,7 @@ import { v4 as uuid } from 'uuid';
 import { LspClient } from './lspClient';
 import { Session, SessionId, SessionOptions } from './session';
 import { logger } from './logging';
+import { PluginManager } from 'live-plugin-manager';
 
 export interface InstallPyrightInfo {
     pyrightVersion: string;
@@ -86,12 +88,9 @@ export function closeSession(sessionId: SessionId) {
 }
 
 export async function getPyrightVersions(): Promise<string[]> {
-    return packageJson('pyright', { allVersions: true, fullMetadata: false })
+    return packageJson('basedpyright', { allVersions: true, fullMetadata: false })
         .then((response) => {
             let versions = Object.keys(response.versions);
-
-            // Filter out the really old versions (1.0.x).
-            versions = versions.filter((version) => !version.startsWith('1.0.'));
 
             // Return the latest version first.
             versions = versions.reverse();
@@ -107,7 +106,7 @@ export async function getPyrightVersions(): Promise<string[]> {
 }
 
 export async function getPyrightLatestVersion(): Promise<string> {
-    return packageJson('pyright')
+    return packageJson('basedpyright')
         .then((response) => {
             if (typeof response.version === 'string') {
                 logger.info(`Received latest pyright version from npm index: ${response.version}`);
@@ -131,7 +130,7 @@ export function startSession(
         const binaryPath = path.join(
             process.cwd(),
             binaryDirPath,
-            './node_modules/pyright/langserver.index.js'
+            './node_modules/basedpyright/langserver.index.js'
         );
 
         // Create a temp directory where we can store a synthesized config file.
@@ -221,31 +220,24 @@ async function installPyright(requestedVersion: string | undefined): Promise<Ins
         version = await getPyrightLatestVersion();
     }
 
-    return new Promise<InstallPyrightInfo>((resolve, reject) => {
         const dirName = `./pyright_local/${version}`;
 
         if (fs.existsSync(dirName)) {
             logger.info(`Pyright version ${version} already installed`);
-            resolve({ pyrightVersion: version, localDirectory: dirName });
-            return;
+            return ({ pyrightVersion: version, localDirectory: dirName });
         }
 
         logger.info(`Attempting to install pyright version ${version}`);
-        exec(
-            `mkdir -p ${dirName}/node_modules && cd ${dirName} && npm install pyright@${version}`,
-            (err) => {
-                if (err) {
-                    logger.error(`Failed to install pyright ${version}`);
-                    reject(`Failed to install pyright@${version}`);
-                    return;
-                }
-
-                logger.info(`Install of pyright ${version} succeeded`);
-
-                resolve({ pyrightVersion: version, localDirectory: dirName });
-            }
-        );
-    });
+        try {
+            await mkdir(path.join(dirName,'node_modules'), {recursive: true})
+            const manager = new PluginManager({pluginsPath: path.join(dirName,'node_modules')})
+            await manager.install('basedpyright', version)
+        } catch(err) {
+            logger.error(`Failed to install pyright ${version}`);
+            throw `Failed to install pyright@${version}`;
+        }
+        logger.info(`Install of pyright ${version} succeeded`);
+        return ({ pyrightVersion: version, localDirectory: dirName });
 }
 
 function synthesizePyrightConfigFile(tempDirPath: string, sessionOptions?: SessionOptions) {
