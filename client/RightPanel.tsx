@@ -39,7 +39,7 @@ export function RightPanel(props: RightPanelProps) {
             panelContents = (
                 <AboutPanel code={props.code} getShareableUrl={props.getShareableUrl} />
             );
-            headerTitle = 'About Pyright Playground';
+            headerTitle = 'About BasedPyright Playground';
             break;
 
         case RightPanelType.Settings:

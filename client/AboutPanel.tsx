@@ -22,14 +22,14 @@ export function AboutPanel(props: AboutPanelProps) {
             </Text>
             <Text style={styles.aboutText} selectable={false}>
                 {
-                    'Type or paste Python code into the text editor, and Pyright will report any errors it finds.'
+                    'Type or paste Python code into the text editor, and BasedPyright will report any errors it finds.'
                 }
             </Text>
             <TextWithLink
                 style={styles.aboutTextLink}
-                url={'https://github.com/erictraut/pyright-playground'}
+                url={'https://github.com/detachhead/basedpyright-playground'}
             >
-                {'Pyright Playground GitHub site'}
+                {'BasedPyright Playground GitHub site'}
             </TextWithLink>
 
             <View style={styles.divider} />
@@ -50,7 +50,7 @@ export function AboutPanel(props: AboutPanelProps) {
                 label={'Markdown with link'}
                 title={'Copy markdown to clipboard'}
                 getTextToCopy={() => {
-                    return `Code sample in [pyright playground](${props.getShareableUrl()})\n`;
+                    return `Code sample in [basedpyright playground](${props.getShareableUrl()})\n`;
                 }}
             />
             <CopyToClipboardButton
@@ -58,7 +58,7 @@ export function AboutPanel(props: AboutPanelProps) {
                 title={'Copy markdown to clipboard'}
                 getTextToCopy={() => {
                     return (
-                        `Code sample in [pyright playground](${props.getShareableUrl()})\n\n` +
+                        `Code sample in [basedpyright playground](${props.getShareableUrl()})\n\n` +
                         '```' +
                         `python\n${props.code}\n` +
                         '```\n'
@@ -109,19 +109,19 @@ export function AboutPanel(props: AboutPanelProps) {
 
             <View style={styles.divider} />
             <Text style={styles.headerText} selectable={false}>
-                {'Pyright'}
+                {'BasedPyright'}
             </Text>
             <Text style={styles.aboutText} selectable={false}>
-                {'Pyright is an open-source standards-based static type checker for Python.'}
+                {'BasedPyright is a fork of pyright with various type checking improvements, improved vscode support and pylance features built into the language server.'}
             </Text>
             <TextWithLink
                 style={styles.aboutTextLink}
-                url={'https://microsoft.github.io/pyright/#/'}
+                url={'https://detachhead.github.io/basedpyright/#/'}
             >
-                {'Pyright documentation'}
+                {'BasedPyright documentation'}
             </TextWithLink>
-            <TextWithLink style={styles.aboutTextLink} url={'https://github.com/Microsoft/pyright'}>
-                {'Pyright GitHub site'}
+            <TextWithLink style={styles.aboutTextLink} url={'https://github.com/detachhead/basedpyright'}>
+                {'BasedPyright GitHub site'}
             </TextWithLink>
         </View>
     );

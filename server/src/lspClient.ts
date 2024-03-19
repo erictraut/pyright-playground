@@ -327,7 +327,7 @@ export class LspClient {
 
     private static _logServerData(data: any) {
         logger.info(
-            `Logged from pyright language server: ${
+            `Logged from basedpyright language server: ${
                 typeof data === 'string' ? data : data.toString('utf8')
             }`
         );

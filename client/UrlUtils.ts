@@ -55,7 +55,7 @@ export function updateUrlFromState(state: PlaygroundState): string {
 
     // Replace the domain name with the canonical one before
     // returning the shareable URL.
-    url.host = 'pyright-play.net';
+    url.host = 'basedpyright.com';
     url.protocol = 'https';
     url.port = '';
     return url.toString();
