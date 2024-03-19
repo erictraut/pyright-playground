@@ -50,7 +50,7 @@ export default function App() {
         requestedPyrightVersion: false,
         diagnostics: [],
         isRightPanelDisplayed: true,
-        rightPanelType: RightPanelType.About,
+        rightPanelType: RightPanelType.Settings,
         isProblemsPanelDisplayed: initialState.code !== '',
         isWaitingForResponse: false,
     });
