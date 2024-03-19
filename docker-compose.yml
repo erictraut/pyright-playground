@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+    site:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        working_dir: /home/node/app
+        command: "bash -c 'cd server && node index'"
+        init: true
+        ports:
+            - '80:3000/tcp'
