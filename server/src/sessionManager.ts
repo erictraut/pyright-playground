@@ -5,7 +5,7 @@
  */
 
 import * as fs from 'fs';
-import { mkdir } from 'fs/promises'
+import { mkdir } from 'fs/promises';
 import { exec, fork } from 'node:child_process';
 import * as os from 'os';
 import packageJson from 'package-json';
@@ -91,6 +91,9 @@ export async function getPyrightVersions(): Promise<string[]> {
     return packageJson('basedpyright', { allVersions: true, fullMetadata: false })
         .then((response) => {
             let versions = Object.keys(response.versions);
+
+            // filter out canary versions
+            versions = versions.filter((verion) => !verion.includes('-'));
 
             // Return the latest version first.
             versions = versions.reverse();
@@ -220,24 +223,24 @@ async function installPyright(requestedVersion: string | undefined): Promise<Ins
         version = await getPyrightLatestVersion();
     }
 
-        const dirName = `./pyright_local/${version}`;
+    const dirName = `./pyright_local/${version}`;
 
-        if (fs.existsSync(dirName)) {
-            logger.info(`Pyright version ${version} already installed`);
-            return ({ pyrightVersion: version, localDirectory: dirName });
-        }
+    if (fs.existsSync(dirName)) {
+        logger.info(`Pyright version ${version} already installed`);
+        return { pyrightVersion: version, localDirectory: dirName };
+    }
 
-        logger.info(`Attempting to install pyright version ${version}`);
-        try {
-            await mkdir(path.join(dirName,'node_modules'), {recursive: true})
-            const manager = new PluginManager({pluginsPath: path.join(dirName,'node_modules')})
-            await manager.install('basedpyright', version)
-        } catch(err) {
-            logger.error(`Failed to install pyright ${version} (error: ${err})`);
-            throw `Failed to install pyright@${version}`;
-        }
-        logger.info(`Install of pyright ${version} succeeded`);
-        return ({ pyrightVersion: version, localDirectory: dirName });
+    logger.info(`Attempting to install pyright version ${version}`);
+    try {
+        await mkdir(path.join(dirName, 'node_modules'), { recursive: true });
+        const manager = new PluginManager({ pluginsPath: path.join(dirName, 'node_modules') });
+        await manager.install('basedpyright', version);
+    } catch (err) {
+        logger.error(`Failed to install pyright ${version} (error: ${err})`);
+        throw `Failed to install pyright@${version}`;
+    }
+    logger.info(`Install of pyright ${version} succeeded`);
+    return { pyrightVersion: version, localDirectory: dirName };
 }
 
 function synthesizePyrightConfigFile(tempDirPath: string, sessionOptions?: SessionOptions) {
