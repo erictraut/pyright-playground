@@ -21,7 +21,7 @@ export function getInitialStateFromLocalStorage(): PlaygroundState {
         }
     }
 
-    return { code: '', settings: { configOverrides: {} } };
+    return { code: '', settings: { configOverrides: {}, typeCheckingMode: 'all' } };
 }
 
 export function setStateToLocalStorage(state: PlaygroundState) {
