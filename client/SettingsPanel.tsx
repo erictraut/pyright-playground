@@ -324,7 +324,7 @@ function ConfigOverride(props: ConfigOverrideProps) {
 function areSettingsDefault(settings: PlaygroundSettings): boolean {
     return (
         Object.keys(settings.configOverrides).length === 0 &&
-        settings.typeCheckingMode === undefined &&
+        settings.typeCheckingMode === 'all' &&
         settings.pyrightVersion === undefined &&
         settings.pythonVersion === undefined &&
         settings.pythonPlatform === undefined &&
@@ -332,42 +332,29 @@ function areSettingsDefault(settings: PlaygroundSettings): boolean {
     );
 }
 
-function getNonDefaultConfigOptions(settings: PlaygroundSettings): ConfigOptionWithValue[] {
-    const overrides: ConfigOptionWithValue[] = [];
+const defaultOption = (option: PyrightConfigSetting, settings: PlaygroundSettings) =>
+    ({
+        all: true,
+        strict: option.isEnabledInStrict,
+        standard: option.isEnabledInStandard,
+    }[settings.typeCheckingMode]);
 
-    configSettingsAlphabetized.forEach((configInfo) => {
-        // If all or strict mode is in effect, don't consider overrides if the
-        // config option is always on
-        if (
-            settings.typeCheckingMode === 'all' ||
-            (settings.typeCheckingMode === 'strict' && configInfo.isEnabledInStrict)
-        ) {
-            return;
-        }
+const isEnabled = (option: PyrightConfigSetting, settings: PlaygroundSettings) =>
+    settings.configOverrides[option.name] ?? defaultOption(option, settings);
 
-        const defaultValue = configInfo.isEnabledInStandard;
-        const overrideValue = settings.configOverrides[configInfo.name] ?? defaultValue;
-
-        if (defaultValue !== overrideValue) {
-            overrides.push({ name: configInfo.name, value: overrideValue });
-        }
-    });
-
-    return overrides;
-}
+const getNonDefaultConfigOptions = (settings: PlaygroundSettings): ConfigOptionWithValue[] =>
+    configSettingsAlphabetized
+        .filter((option) => defaultOption(option, settings) !== isEnabled(option, settings))
+        .map((option) => ({ name: option.name, value: isEnabled(option, settings) }));
 
 function getConfigOptionMenuItem(
     settings: PlaygroundSettings,
     config: PyrightConfigSetting
 ): CheckmarkMenuItem {
-    const isAll = settings.typeCheckingMode === 'all';
-    const isEnabled =
-        isAll || (settings.configOverrides[config.name] ?? config.isEnabledInStandard);
-
     return {
         label: config.name,
-        checked: isEnabled || (config.isEnabledInStrict && settings.typeCheckingMode === 'strict'),
-        disabled: isAll || (config.isEnabledInStrict && settings.typeCheckingMode === 'strict'),
+        checked: isEnabled(config, settings),
+        disabled: false,
         title: config.description,
     };
 }
@@ -375,7 +362,7 @@ function getConfigOptionMenuItem(
 function toggleConfigOption(settings: PlaygroundSettings, optionName: string): PlaygroundSettings {
     const configOverrides = { ...settings.configOverrides };
     const configInfo = configSettings.find((s) => s.name === optionName);
-    const isEnabledByDefault = configInfo?.isEnabledInStandard;
+    const isEnabledByDefault = defaultOption(configInfo, settings);
     const isEnabled = configOverrides[optionName] ?? isEnabledByDefault;
 
     if (isEnabledByDefault === !isEnabled) {
