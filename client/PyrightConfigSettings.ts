@@ -582,6 +582,12 @@ export const configSettings: PyrightConfigSetting[] = [
         isEnabledInStandard: false,
         isEnabledInStrict: false,
     },
+    {
+        name: 'reportIgnoreCommentWithoutRule',
+        description: 'Controls reporting `# type: ignore` and `# pyright: ignore` comments without specifying a rule',
+        isEnabledInStandard: false,
+        isEnabledInStrict: false,
+    },
 ];
 
 export const configSettingsAlphabetized = configSettings.sort((a, b) => {
