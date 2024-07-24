@@ -10,6 +10,7 @@ import {
     Position,
     Range,
     SignatureHelp,
+    WorkspaceEdit,
 } from 'vscode-languageserver-types';
 import { endpointDelete, endpointGet, endpointPost } from './EndpointUtils';
 import { PlaygroundSettings } from './PlaygroundSettings';
@@ -92,6 +93,27 @@ export class LspSession {
                         throw data;
                     }
                     return data.hover;
+                })
+                .catch((err) => {
+                    throw err;
+                });
+        });
+    }
+
+    async getRenameEditsForPosition(
+        code: string,
+        position: Position,
+        newName: string
+    ): Promise<WorkspaceEdit | undefined> {
+        return this._doWithSession<WorkspaceEdit>(async (sessionId) => {
+            const endpoint = appServerApiAddressPrefix + `session/${sessionId}/rename`;
+            return endpointPost(endpoint, {}, JSON.stringify({ code, position, newName }))
+                .then(async (response) => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw data;
+                    }
+                    return data.edits;
                 })
                 .catch((err) => {
                     throw err;

@@ -14,6 +14,7 @@ import {
     getSignatureHelp,
     getCompletion,
     resolveCompletion,
+    getRenameEdits,
 } from './service';
 
 const router = express.Router();
@@ -48,6 +49,10 @@ router.post('/session/:sid/diagnostics', (req, res) => {
 
 router.post('/session/:sid/hover', (req, res) => {
     getHoverInfo(req, res);
+});
+
+router.post('/session/:sid/rename', (req, res) => {
+    getRenameEdits(req, res);
 });
 
 router.post('/session/:sid/signature', (req, res) => {

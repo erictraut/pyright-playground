@@ -12,6 +12,7 @@ import { logger } from './logging';
 interface CodeWithOptions {
     code: string;
     position?: Position;
+    newName?: string;
 }
 
 // Retrieves the current status of the service including the
@@ -100,6 +101,35 @@ export function getHoverInfo(req: Request, res: Response) {
         })
         .catch((err) => {
             logger.error(`getHoverInfo returning a 500: ${err}`);
+            res.status(500).json({ message: err || 'An unexpected error occurred' });
+        });
+}
+
+// Given some Python code and a position within that code and a new name,
+// returns a list of edits to effect a semantic rename.
+export function getRenameEdits(req: Request, res: Response) {
+    const session = validateSession(req, res);
+    const langClient = session?.langClient;
+    if (!langClient) {
+        return;
+    }
+
+    const codeWithOptions = validateCodeWithOptions(req, res, ['position', 'newName']);
+    if (!codeWithOptions) {
+        return;
+    }
+
+    langClient
+        .getRenameEdits(
+            codeWithOptions.code,
+            codeWithOptions.position!,
+            codeWithOptions.newName ?? ''
+        )
+        .then((edits) => {
+            res.status(200).json({ edits });
+        })
+        .catch((err) => {
+            logger.error(`getRenameEdits returning a 500: ${err}`);
             res.status(500).json({ message: err || 'An unexpected error occurred' });
         });
 }
@@ -288,6 +318,14 @@ function validateCodeWithOptions(
                     line: position.line,
                     character: position.character,
                 };
+            }
+        } else if (option === 'newName') {
+            const newName = req.body.newName;
+            if (typeof newName !== 'string') {
+                res.status(400).json({ message: 'Invalid newName' });
+                reportedError = true;
+            } else {
+                response.newName = newName;
             }
         }
     });

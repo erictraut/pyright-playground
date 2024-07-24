@@ -15,6 +15,7 @@ import {
     DiagnosticSeverity,
     InsertReplaceEdit,
     Range,
+    TextDocumentEdit,
 } from 'vscode-languageserver-types';
 import { LspClient } from './LspClient';
 
@@ -32,6 +33,9 @@ loader
             provideCompletionItems: handleProvideCompletionRequest,
             resolveCompletionItem: handleResolveCompletionRequest,
             triggerCharacters: ['.', '[', '"', "'"],
+        });
+        monaco.languages.registerRenameProvider('python', {
+            provideRenameEdits: handleRenameRequest,
         });
     })
     .catch((error) => console.error('An error occurred during initialization of Monaco: ', error));
@@ -215,6 +219,51 @@ async function handleHoverRequest(
             ],
             range: convertRange(hoverInfo.range),
         };
+    } catch (err) {
+        return null;
+    }
+}
+
+async function handleRenameRequest(
+    model: monaco.editor.ITextModel,
+    position: monaco.Position,
+    newName: string
+): Promise<monaco.languages.WorkspaceEdit> {
+    const lspClient = getLspClientForModel(model);
+    if (!lspClient) {
+        return null;
+    }
+
+    try {
+        const renameEdits = await lspClient.getRenameEditsForPosition(
+            model.getValue(),
+            {
+                line: position.lineNumber - 1,
+                character: position.column - 1,
+            },
+            newName
+        );
+
+        const edits: monaco.languages.IWorkspaceTextEdit[] = [];
+
+        if (renameEdits?.documentChanges) {
+            for (const docChange of renameEdits.documentChanges) {
+                if (TextDocumentEdit.is(docChange)) {
+                    for (const textEdit of docChange.edits) {
+                        edits.push({
+                            resource: model.uri,
+                            versionId: undefined,
+                            textEdit: {
+                                range: convertRange(textEdit.range),
+                                text: textEdit.newText,
+                            },
+                        });
+                    }
+                }
+            }
+        }
+
+        return { edits };
     } catch (err) {
         return null;
     }

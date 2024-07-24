@@ -33,9 +33,12 @@ import {
     LogMessageParams,
     Position,
     PublishDiagnosticsParams,
+    RenameParams,
+    RenameRequest,
     SignatureHelp,
     SignatureHelpParams,
     SignatureHelpRequest,
+    WorkspaceEdit,
 } from 'vscode-languageserver';
 import { SessionOptions } from './session';
 import { logger } from './logging';
@@ -214,6 +217,34 @@ export class LspClient {
             .sendRequest(HoverRequest.type, params)
             .catch((err) => {
                 // Don't return an error. Just return null (no info).
+                return null;
+            });
+
+        return result;
+    }
+
+    async getRenameEdits(
+        code: string,
+        position: Position,
+        newName: string
+    ): Promise<WorkspaceEdit | null> {
+        let documentVersion = this._documentVersion;
+        if (this._documentText !== code) {
+            documentVersion = await this.updateTextDocument(code);
+        }
+
+        const params: RenameParams = {
+            textDocument: {
+                uri: documentUri,
+            },
+            position,
+            newName,
+        };
+
+        const result = await this._connection
+            .sendRequest(RenameRequest.type, params)
+            .catch((err) => {
+                // Don't return an error. Just return null (no edits).
                 return null;
             });
 

@@ -10,6 +10,7 @@ import {
     Diagnostic,
     Position,
     SignatureHelp,
+    WorkspaceEdit,
 } from 'vscode-languageserver-types';
 import { HoverInfo, LspSession } from './LspSession';
 import { PlaygroundSettings } from './PlaygroundSettings';
@@ -51,6 +52,14 @@ export class LspClient {
 
     async getHoverForPosition(code: string, position: Position): Promise<HoverInfo | undefined> {
         return this._lspSession.getHoverForPosition(code, position);
+    }
+
+    async getRenameEditsForPosition(
+        code: string,
+        position: Position,
+        newName: string
+    ): Promise<WorkspaceEdit | undefined> {
+        return this._lspSession.getRenameEditsForPosition(code, position, newName);
     }
 
     async getSignatureHelpForPosition(
