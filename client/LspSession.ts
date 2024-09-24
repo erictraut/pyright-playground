@@ -228,6 +228,10 @@ export class LspSession {
                 sessionOptions.pythonVersion = this._settings.pythonVersion;
             }
 
+            if (this._settings.pythonPlatform) {
+                sessionOptions.pythonPlatform = this._settings.pythonPlatform;
+            }
+
             if (this._settings.strictMode) {
                 sessionOptions.typeCheckingMode = 'strict';
             }
