@@ -38,7 +38,7 @@ jobs:
         with:
           name: node-app
           path: |
-            server/.build
+            server/build
             server/dist
             server/index.js
 

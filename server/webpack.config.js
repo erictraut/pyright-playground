@@ -1,6 +1,6 @@
 const path = require('path');
 
-const outPath = path.resolve(__dirname, '.build');
+const outPath = path.resolve(__dirname, 'build');
 
 module.exports = (_, { mode }) => {
     return {
