@@ -141,6 +141,11 @@ export function startSession(
         // it to the temp directory so the language server can find it.
         synthesizePyrightConfigFile(tempDirPath, sessionOptions);
 
+        // Synthesize an empty venv directory so that pyright doesn't try to
+        // resolve imports using the default Python environment installed on
+        // the server's docker container.
+        synthesizeVenvDirectory(tempDirPath);
+
         // Set the environment variable for the locale. Older versions
         // of pyright don't handle the local passed via the LSP initialize
         // request.
@@ -180,6 +185,22 @@ export function startSession(
             session.langClient
                 .initialize(tempDirPath, sessionOptions)
                 .then(() => {
+                    if (sessionOptions?.code !== undefined) {
+                        console.log('Sending initial code to warm up service');
+                        // Warm up the service by sending it an empty file.
+                        if (session.langClient) {
+                            session.langClient
+                                .getDiagnostics(sessionOptions.code)
+                                .then(() => {
+                                    // Throw away results;
+                                    console.log('Received diagnostics from warm up');
+                                })
+                                .catch((err) => {
+                                    // Throw away error;
+                                });
+                        }
+                    }
+
                     resolve(sessionId);
                 })
                 .catch((err) => {
@@ -248,6 +269,11 @@ async function installPyright(requestedVersion: string | undefined): Promise<Ins
     });
 }
 
+function synthesizeVenvDirectory(tempDirPath: string) {
+    const venvPath = path.join(tempDirPath, 'venv', 'lib', 'site-packages');
+    fs.mkdirSync(venvPath, { recursive: true });
+}
+
 function synthesizePyrightConfigFile(tempDirPath: string, sessionOptions?: SessionOptions) {
     const configFilePath = path.join(tempDirPath, 'pyrightconfig.json');
     const config: any = {};
@@ -267,6 +293,17 @@ function synthesizePyrightConfigFile(tempDirPath: string, sessionOptions?: Sessi
     if (sessionOptions?.typeCheckingMode === 'strict') {
         config.typeCheckingMode = 'strict';
     }
+
+    // Set the venvPath to a synthesized venv to prevent pyright from
+    // trying to resolve imports using the default Python environment
+    // installed on the server's docker container.
+    config.venvPath = '.';
+    config.venv = 'venv';
+
+    // Indicate that we don't want to resolve native libraries. This is
+    // expensive, and we know there will be no native libraries in the
+    // playground.
+    config.skipNativeLibraries = true;
 
     if (sessionOptions?.configOverrides) {
         Object.keys(sessionOptions.configOverrides).forEach((key) => {

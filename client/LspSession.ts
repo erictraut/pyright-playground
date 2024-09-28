@@ -42,6 +42,7 @@ if (currentUrl.hostname === 'localhost') {
 export class LspSession {
     private _sessionId: string | undefined;
     private _settings: PlaygroundSettings | undefined;
+    private _initialCode = '';
 
     updateSettings(settings: PlaygroundSettings) {
         this._settings = settings;
@@ -49,6 +50,12 @@ export class LspSession {
         // Force the current session to close so we can
         // create a new one with the updated settings.
         this._closeSession();
+    }
+
+    updateInitialCode(text: string) {
+        // When creating a new session, we can send the initial
+        // code to the server to speed up initialization.
+        this._initialCode = text;
     }
 
     static async getPyrightServiceStatus(): Promise<ServerStatus> {
@@ -236,6 +243,7 @@ export class LspSession {
                 sessionOptions.typeCheckingMode = 'strict';
             }
 
+            sessionOptions.code = this._initialCode;
             sessionOptions.configOverrides = { ...this._settings.configOverrides };
             sessionOptions.locale = this._settings.locale ?? navigator.language;
         }

@@ -6,7 +6,7 @@
 import * as appInsight from 'applicationinsights';
 import bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import * as path from 'path';
 import routes from './routes';
 import { logger } from './logging';
@@ -40,6 +40,21 @@ function startService() {
     const root = './';
     const apiPort = process.env.PORT || 3000;
     const app = express();
+
+    // Middleware to log the time taken by each request
+    const requestTimeLogger = (req: Request, res: Response, next: NextFunction) => {
+        const start = Date.now();
+
+        res.on('finish', () => {
+            const duration = Date.now() - start;
+            console.log(`${req.method} ${req.originalUrl} took ${duration}ms`);
+        });
+
+        next();
+    };
+
+    // Use the middleware globally.
+    app.use(requestTimeLogger);
 
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));

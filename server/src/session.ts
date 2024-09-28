@@ -17,6 +17,7 @@ export interface SessionOptions {
     typeCheckingMode?: string;
     configOverrides?: { [name: string]: boolean };
     locale?: string;
+    code?: string;
 }
 
 export interface Session {

@@ -255,6 +255,14 @@ function validateSessionOptions(req: Request, res: Response): SessionOptions | u
         }
     }
 
+    const code = req.body.code;
+    if (code !== undefined) {
+        if (typeof code !== 'string') {
+            res.status(400).json({ message: 'Invalid code' });
+            return undefined;
+        }
+    }
+
     const configOverrides: { [name: string]: boolean } = {};
     if (req.body.configOverrides !== undefined) {
         if (typeof req.body.configOverrides !== 'object') {
@@ -280,6 +288,7 @@ function validateSessionOptions(req: Request, res: Response): SessionOptions | u
         typeCheckingMode,
         configOverrides,
         locale,
+        code,
     };
 }
 

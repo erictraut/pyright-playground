@@ -41,6 +41,7 @@ export class LspClient {
         if (content !== this._docContent) {
             this._docContent = content;
             this._docVersion++;
+            this._lspSession.updateInitialCode(content);
             this._restartDiagnosticsTimer();
         }
     }
