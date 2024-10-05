@@ -35,7 +35,7 @@ export function createSession(req: Request, res: Response) {
         return;
     }
 
-    SessionManager.createNewSession(sessionOptions)
+    SessionManager.createSession(sessionOptions)
         .then((sessionId) => {
             res.status(200).json({ sessionId });
         })
@@ -51,7 +51,7 @@ export function closeSession(req: Request, res: Response) {
         return;
     }
 
-    SessionManager.closeSession(session.id);
+    SessionManager.recycleSession(session.id);
     res.status(200).json({});
 }
 

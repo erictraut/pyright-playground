@@ -19,8 +19,11 @@ export interface InstallPyrightInfo {
     localDirectory: string;
 }
 
-// Map of sessions indexed by ID
+// Map of active sessions indexed by ID
 const activeSessions = new Map<SessionId, Session>();
+
+// List of inactive sessions that can be reused.
+const inactiveSessions: Session[] = [];
 
 // Maximum time a session can be idle before it is closed.
 const maxSessionLifetime = 1 * 60 * 1000; // 1 minute
@@ -38,6 +41,13 @@ const defaultPythonPlatform = 'All';
 // Active lifetime timer for harvesting old sessions.
 let lifetimeTimer: NodeJS.Timeout | undefined;
 
+// Cached "latest" version of pyright.
+const timeBetweenVersionRequestsInMs = 60 * 60 * 1000; // 1 hour
+let lastVersionRequestTime = 0;
+let lastVersion = '';
+
+const maxInactiveSessionCount = 64;
+
 export function getSessionById(id: SessionId) {
     const session = activeSessions.get(id);
 
@@ -49,19 +59,25 @@ export function getSessionById(id: SessionId) {
 }
 
 // Allocate a new session and return its ID.
-export async function createNewSession(
+export async function createSession(
     sessionOptions: SessionOptions | undefined
 ): Promise<SessionId> {
     scheduleSessionLifetimeTimer();
+
+    // See if there are any inactive sessions that can be reused.
+    const inactiveSession = getCompatibleInactiveSession(sessionOptions);
+    if (inactiveSession) {
+        return restartSession(inactiveSession, sessionOptions);
+    }
 
     return installPyright(sessionOptions?.pyrightVersion).then((info) => {
         return startSession(info.localDirectory, sessionOptions);
     });
 }
 
-// Attempts to close the session and cleans up its resources. It
-// silently fails if it cannot.
-export function closeSession(sessionId: SessionId) {
+// Places an existing session into an inactive pool that can be used
+// for future requests.
+export function recycleSession(sessionId: SessionId) {
     const session = activeSessions.get(sessionId);
     if (!session) {
         return;
@@ -69,20 +85,17 @@ export function closeSession(sessionId: SessionId) {
 
     session.langClient?.cancelRequests();
 
-    // If the process exists, attempt to kill it.
-    if (session.langServerProcess) {
-        session.langServerProcess.kill();
-    }
-
-    session.langServerProcess = undefined;
     activeSessions.delete(sessionId);
+    inactiveSessions.push(session);
 
-    // Dispose of the temporary directory.
-    try {
-        fs.rmSync(session.tempDirPath, { recursive: true });
-    } catch (e) {
-        // Ignore error.
+    if (inactiveSessions.length > maxInactiveSessionCount) {
+        const session = inactiveSessions.shift();
+        if (session) {
+            terminateSession(session);
+        }
     }
+
+    logger.info(`Recycling session (currently ${inactiveSessions.length} in inactive queue)`);
 }
 
 export async function getPyrightVersions(): Promise<string[]> {
@@ -107,10 +120,29 @@ export async function getPyrightVersions(): Promise<string[]> {
 }
 
 export async function getPyrightLatestVersion(): Promise<string> {
+    const timeSinceLastRequest = Date.now() - lastVersionRequestTime;
+
+    if (timeSinceLastRequest < timeBetweenVersionRequestsInMs) {
+        logger.info(`Returning cached latest pyright version: ${lastVersion}`);
+        return lastVersion;
+    }
+
     return packageJson('pyright')
         .then((response) => {
             if (typeof response.version === 'string') {
                 logger.info(`Received latest pyright version from npm index: ${response.version}`);
+
+                lastVersionRequestTime = Date.now();
+
+                if (lastVersion !== response.version) {
+                    lastVersion = response.version;
+
+                    // We need to terminate all inactive sessions because an empty
+                    // version string in the session options changes meaning when
+                    // the version of pyright changes.
+                    terminateInactiveSessions();
+                }
+
                 return response.version;
             }
 
@@ -121,10 +153,7 @@ export async function getPyrightLatestVersion(): Promise<string> {
         });
 }
 
-export function startSession(
-    binaryDirPath: string,
-    sessionOptions?: SessionOptions
-): Promise<SessionId> {
+function startSession(binaryDirPath: string, sessionOptions?: SessionOptions): Promise<SessionId> {
     return new Promise<SessionId>((resolve, reject) => {
         // Launch a new instance of the language server in another process.
         logger.info(`Spawning new pyright language server from ${binaryDirPath}`);
@@ -172,6 +201,7 @@ export function startSession(
             id: sessionId,
             lastAccessTime: Date.now(),
             tempDirPath,
+            options: sessionOptions,
         };
 
         // Start tracking the session.
@@ -186,14 +216,15 @@ export function startSession(
                 .initialize(tempDirPath, sessionOptions)
                 .then(() => {
                     if (sessionOptions?.code !== undefined) {
-                        console.log('Sending initial code to warm up service');
-                        // Warm up the service by sending it an empty file.
                         if (session.langClient) {
+                            // Warm up the service by sending it an empty file.
+                            logger.info('Sending initial code to warm up service');
+
                             session.langClient
                                 .getDiagnostics(sessionOptions.code)
                                 .then(() => {
-                                    // Throw away results;
-                                    console.log('Received diagnostics from warm up');
+                                    // Throw away results.
+                                    logger.info('Received diagnostics from warm up');
                                 })
                                 .catch((err) => {
                                     // Throw away error;
@@ -230,6 +261,111 @@ export function startSession(
             closeSession(sessionId);
         });
     });
+}
+
+function restartSession(session: Session, sessionOptions?: SessionOptions): SessionId {
+    logger.info(`Restarting inactive session ${session.id}`);
+
+    session.lastAccessTime = Date.now();
+    session.options = sessionOptions;
+
+    // Start tracking the session.
+    activeSessions.set(session.id, session);
+
+    if (session.langClient) {
+        // Send the initial code (or an empty file) to warm up the service.
+        session.langClient
+            .getDiagnostics(sessionOptions?.code ?? '')
+            .then(() => {
+                // Throw away results.
+                logger.info('Received diagnostics from warm up');
+            })
+            .catch((err) => {
+                // Throw away error;
+            });
+    }
+
+    return session.id;
+}
+
+// Attempts to close the session and cleans up its resources. It
+// silently fails if it cannot.
+function closeSession(sessionId: SessionId) {
+    const session = activeSessions.get(sessionId);
+    if (!session) {
+        return;
+    }
+
+    session.langClient?.cancelRequests();
+
+    activeSessions.delete(sessionId);
+
+    terminateSession(session);
+}
+
+function terminateInactiveSessions() {
+    // Pop all inactive sessions and terminate them.
+    while (true) {
+        const session = inactiveSessions.pop();
+        if (!session) {
+            break;
+        }
+
+        terminateSession(session);
+    }
+}
+
+function terminateSession(session: Session) {
+    // If the process exists, attempt to kill it.
+    if (session.langServerProcess) {
+        session.langServerProcess.kill();
+    }
+
+    session.langServerProcess = undefined;
+    // Dispose of the temporary directory.
+    try {
+        fs.rmSync(session.tempDirPath, { recursive: true });
+    } catch (e) {
+        // Ignore error.
+    }
+}
+
+function getCompatibleInactiveSession(sessionOptions?: SessionOptions): Session | undefined {
+    logger.info(`Looking for compatible inactive session`);
+
+    const sessionIndex = inactiveSessions.findIndex((session) => {
+        if (
+            sessionOptions?.pythonVersion !== session.options?.pythonVersion ||
+            sessionOptions?.pythonPlatform !== session.options?.pythonPlatform ||
+            sessionOptions?.pyrightVersion !== session.options?.pyrightVersion ||
+            sessionOptions?.locale !== session.options?.locale ||
+            sessionOptions?.typeCheckingMode !== session.options?.typeCheckingMode
+        ) {
+            return false;
+        }
+
+        const requestedOverrides = sessionOptions?.configOverrides || {};
+        const existingOverrides = session.options?.configOverrides || {};
+
+        if (requestedOverrides.length !== existingOverrides.length) {
+            return false;
+        }
+
+        for (const key of Object.keys(requestedOverrides)) {
+            if (requestedOverrides[key] !== existingOverrides[key]) {
+                return false;
+            }
+        }
+
+        return true;
+    });
+
+    if (sessionIndex < 0) {
+        return undefined;
+    }
+
+    logger.info(`Found compatible inactive session`);
+    return inactiveSessions.splice(sessionIndex, 1)[0];
 }
 
 async function installPyright(requestedVersion: string | undefined): Promise<InstallPyrightInfo> {
@@ -330,8 +466,8 @@ function scheduleSessionLifetimeTimer() {
 
         activeSessions.forEach((session, sessionId) => {
             if (curTime - session.lastAccessTime > maxSessionLifetime) {
-                logger.info(`Session ${sessionId} timed out; deleting`);
-                closeSession(sessionId);
+                logger.info(`Session ${sessionId} timed out; recycling`);
+                recycleSession(sessionId);
                 activeSessions.delete(sessionId);
             }
         });
