@@ -356,6 +356,9 @@ export class LspClient {
         });
 
         this._pendingDiagRequests.clear();
+        this._documentText = '';
+        this._documentDiags = undefined;
+        this._documentVersion = 1;
     }
 
     private static _logServerData(data: any) {

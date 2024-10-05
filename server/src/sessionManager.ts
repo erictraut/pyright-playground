@@ -272,17 +272,11 @@ function restartSession(session: Session, sessionOptions?: SessionOptions): Sess
     // Start tracking the session.
     activeSessions.set(session.id, session);
 
-    if (session.langClient) {
-        // Send the initial code (or an empty file) to warm up the service.
-        session.langClient
-            .getDiagnostics(sessionOptions?.code ?? '')
-            .then(() => {
-                // Throw away results.
-                logger.info('Received diagnostics from warm up');
-            })
-            .catch((err) => {
-                // Throw away error;
-            });
+    if (session.langClient && sessionOptions?.code) {
+        // Send the initial code to warm up the service.
+        session.langClient.getDiagnostics(sessionOptions.code).catch((err) => {
+            // Throw away error;
+        });
     }
 
     return session.id;
