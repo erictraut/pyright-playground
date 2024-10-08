@@ -137,7 +137,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
             <SettingsHeader headerText={'Python Version'} />
             <View style={styles.selectionContainer}>
                 <Text style={styles.selectedOptionText} selectable={false}>
-                    {props.settings.pythonVersion || 'Default (3.12)'}
+                    {props.settings.pythonVersion || 'Default (3.13)'}
                 </Text>
                 <MenuButton
                     onPress={() => {

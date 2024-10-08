@@ -35,7 +35,7 @@ const maxPyrightVersionCount = 50;
 // default to these. Otherwise the language server will pick these
 // based on whatever version of Python happens to be installed in
 // the container it's running in.
-const defaultPythonVersion = '3.12';
+const defaultPythonVersion = '3.13';
 const defaultPythonPlatform = 'All';
 
 // Active lifetime timer for harvesting old sessions.
