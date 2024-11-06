@@ -294,7 +294,7 @@ async function handleSignatureHelpRequest(
                         activeParameter: sig.activeParameter,
                     };
                 }),
-                activeSignature: sigInfo.activeSignature,
+                activeSignature: sigInfo.activeSignature ?? 0,
                 activeParameter: sigInfo.activeParameter,
             },
             dispose: () => {},
