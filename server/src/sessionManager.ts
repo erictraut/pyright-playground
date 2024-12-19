@@ -387,7 +387,7 @@ async function installPyright(requestedVersion: string | undefined): Promise<Ins
             (err) => {
                 if (err) {
                     logger.error(`Failed to install pyright ${version}`);
-                    reject(`Failed to install pyright@${version}`);
+                    reject(`Failed to install pyright@${version}, ${err}`);
                     return;
                 }
 
