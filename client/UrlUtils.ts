@@ -51,7 +51,13 @@ export function updateUrlFromState(state: PlaygroundState): string {
         }
     }
 
-    history.replaceState(null, null, url.toString());
+    // Firefox throws an exception in safe mode if this call is made
+    // too often. To prevent a crash, catch the exception and ignore it.
+    try {
+        window.history.pushState(null, null, url.toString());
+    } catch {
+        // Do nothing.
+    }
 
     // Replace the domain name with the canonical one before
     // returning the shareable URL.
